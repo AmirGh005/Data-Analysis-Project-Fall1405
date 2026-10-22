@@ -1,0 +1,137 @@
+{
+  "phase": 2,
+  "split_counts": {
+    "train": 5031,
+    "shift_eu_test": 2677,
+    "val": 937,
+    "test": 916
+  },
+  "preprocessing_and_imputation": {
+    "train_median_positional_accuracy_m": 13.8,
+    "train_median_observed_hour": 13.47,
+    "pos_accuracy_missing_rate_pct": 6.66,
+    "hour_missing_rate_pct": 4.23,
+    "engineered_features_count": 15
+  },
+  "vision_embedding_metadata": {
+    "backbone_name": "facebook/dinov2-small-patch14-224",
+    "input_resolution": [
+      224,
+      224
+    ],
+    "normalization_mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "normalization_std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "embedding_dim": 64,
+    "l2_normalized": true,
+    "pooling_strategy": "Multi-photo observation mean pooling + L2 normalization"
+  },
+  "unsupervised_discovery": {
+    "pca_variance_explained_top5_pct": 12.8,
+    "pca_variance_explained_top20_pct": 38.93,
+    "manifold_projection_method": "UMAP",
+    "k_sweep_evaluation": [
+      {
+        "k": 4,
+        "silhouette_score": 0.0508,
+        "davies_bouldin_index": 3.4325,
+        "calinski_harabasz_score": 222.65
+      },
+      {
+        "k": 6,
+        "silhouette_score": 0.0555,
+        "davies_bouldin_index": 3.1067,
+        "calinski_harabasz_score": 195.17
+      },
+      {
+        "k": 8,
+        "silhouette_score": 0.0559,
+        "davies_bouldin_index": 3.0747,
+        "calinski_harabasz_score": 168.91
+      },
+      {
+        "k": 10,
+        "silhouette_score": 0.0561,
+        "davies_bouldin_index": 2.909,
+        "calinski_harabasz_score": 148.8
+      },
+      {
+        "k": 12,
+        "silhouette_score": 0.0529,
+        "davies_bouldin_index": 3.0367,
+        "calinski_harabasz_score": 132.4
+      },
+      {
+        "k": 14,
+        "silhouette_score": 0.05,
+        "davies_bouldin_index": 3.1508,
+        "calinski_harabasz_score": 118.61
+      },
+      {
+        "k": 16,
+        "silhouette_score": 0.0483,
+        "davies_bouldin_index": 3.1712,
+        "calinski_harabasz_score": 108.23
+      }
+    ],
+    "selected_optimal_k": 10,
+    "kmeans_best_silhouette": 0.0561,
+    "agglomerative_ward_silhouette": 0.0033,
+    "kmeans_vs_agglomerative_ari": 0.203,
+    "stability_across_seeds_and_subsamples": {
+      "mean_ari": 0.8756,
+      "std_ari": 0.0141,
+      "mean_nmi": 0.8545
+    },
+    "alignment_with_taxonomy_and_guilds": {
+      "nmi_clusters_vs_lookalike_guild": 0.429,
+      "nmi_clusters_vs_taxonomic_family": 0.3564
+    },
+    "long_tail_embedding_purity": [
+      {
+        "long_tail_tier": "Head (Frequent)",
+        "mean_knn_species_purity": 28.74,
+        "mean_deadly_neighbor_mixing_pct": 22.93,
+        "sample_count": 1201
+      },
+      {
+        "long_tail_tier": "Medium",
+        "mean_knn_species_purity": 16.12,
+        "mean_deadly_neighbor_mixing_pct": 24.55,
+        "sample_count": 1986
+      },
+      {
+        "long_tail_tier": "Tail (Rare)",
+        "mean_knn_species_purity": 10.56,
+        "mean_deadly_neighbor_mixing_pct": 22.86,
+        "sample_count": 1844
+      }
+    ]
+  },
+  "ood_analysis": {
+    "total_flagged_ood_samples": 295,
+    "flagged_ood_percentage": 3.09,
+    "mean_centroid_cosine_dist_normal": 0.6945,
+    "mean_centroid_cosine_dist_ood": 0.6712,
+    "ood_rate_by_long_tail_tier_pct": {
+      "Head (Frequent)": 3.95,
+      "Medium": 3.58,
+      "Tail (Rare)": 2.02
+    },
+    "qualitative_diagnosis_breakdown": {
+      "Biological_Atypical_Morphology_or_Lookalike_Boundary": 118,
+      "Spatial_Metadata_Outlier_Extreme_GPS_Error": 114,
+      "Low_Quality_Single_Photo_or_Occluded": 22,
+      "Low_Quality_Blur_Dark": 19,
+      "Biological_Atypical_Decayed_SporePrint": 14,
+      "Potential_Label_Error_LookalikeSwap": 8
+    }
+  }
+}

@@ -1,0 +1,44 @@
+project:
+  name: "iNaturalist-Fungi-Risk-Aware-Classification"
+  track: "Track C - iNaturalist Open Data"
+  random_seed: 42
+  phase: 2
+
+paths:
+  input_observations_parquet: "data/processed/phase1_audited_observations.parquet"
+  input_observations_csv: "data/processed/phase1_audited_observations.csv"
+  input_photos_csv: "data/raw/fungi_photos_raw.csv"
+  species_metadata_csv: "data/species_toxicity_metadata.csv"
+  output_features_parquet: "data/processed/phase2_prepared_dataset.parquet"
+  output_features_csv: "data/processed/phase2_prepared_dataset.csv"
+  output_embeddings_npz: "data/processed/phase2_visual_embeddings.npz"
+  output_ood_candidates_csv: "reports/phase2/phase2_ood_outliers.csv"
+  output_cluster_profiles_csv: "reports/phase2/phase2_cluster_profiles.csv"
+  output_feature_catalog_csv: "reports/phase2/phase2_engineered_features.csv"
+  summary_json: "reports/phase2/phase2_summary.json"
+  figures_dir: "figures/phase2"
+
+split_design:
+  in_domain_region: "north_america"
+  shift_test_region: "europe"
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  group_column: "observer_id"
+
+vision_embedding:
+  backbone_name: "facebook/dinov2-small-patch14-224"
+  input_resolution: [224, 224]
+  normalization_mean: [0.485, 0.456, 0.406]
+  normalization_std: [0.229, 0.224, 0.225]
+  embedding_dim: 64
+  pca_components: 20
+
+clustering:
+  k_candidates: [4, 6, 8, 10, 12, 14, 16]
+  stability_seeds: [42, 101, 202, 303, 404]
+  stability_subsample_fraction: 0.85
+
+ood_detection:
+  contamination_rate: 0.03
+  n_estimators: 150
