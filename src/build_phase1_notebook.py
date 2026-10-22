@@ -1,0 +1,150 @@
+"""
+Generates the clean, reproducible Jupyter Notebook for Phase 1 EDA Walkthrough
+(notebooks/01_phase1_eda_walkthrough.ipynb).
+"""
+
+import os
+import json
+
+NOTEBOOK_PATH = "notebooks/01_phase1_eda_walkthrough.ipynb"
+
+
+def create_phase1_notebook() -> None:
+    os.makedirs(os.path.dirname(NOTEBOOK_PATH), exist_ok=True)
+
+    cells = [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# فاز اول: فهم مسئله، ممیزی کیفیت داده و تحلیل اکتشافی (Track C: iNaturalist Fungi)\n",
+                "**پروژه درس تحلیل داده — پاییز ۱۴۰۵**  \n",
+                "**موضوع:** طبقه‌بندی چندوجهی گونه‌های قارچ و تمایز گونه‌های سمی از خوراکی با تصمیم‌گیری آگاه از ریسک\n",
+                "\n",
+                "این نوت‌بوک، گزارش تعاملی و قابل بازتولید فاز اول پروژه است که خروجی‌های ممیزی ساختار، کیفیت داده، توزیع دنباله بلند (Long-Tail)، خطر نشت اطلاعات (Data Leakage) و خط مبنای اولیه را بارگذاری و نمایش می‌دهد."
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "import json\n",
+                "import pandas as pd\n",
+                "import matplotlib.pyplot as plt\n",
+                "from IPython.display import Image, display\n",
+                "\n",
+                "os.chdir('..') if os.path.basename(os.getcwd()) == 'notebooks' else None\n",
+                "print('Working Directory:', os.getcwd())"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۱. بارگذاری خلاصه ممیزی ساختار و کیفیت داده (Data Quality Audit)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "with open('reports/phase1/phase1_audit_summary.json', 'r', encoding='utf-8') as f:\n",
+                "    audit_summary = json.load(f)\n",
+                "\n",
+                "print('=== خلاصه ممیزی کیفیت داده ===')\n",
+                "display(pd.Series(audit_summary['structure_and_quality']['quality_audit']).drop('missing_values_by_column'))\n",
+                "\n",
+                "print('\\n=== خلاصه ساختار سلسله‌مراتبی (Track C Hierarchy) ===')\n",
+                "display(pd.Series(audit_summary['structure_and_quality']['structure_audit']))"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۲. بررسی جدول متادیتای سمیت ۴۰ گونه قارچ و داده‌های پاک‌سازی شده"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_species = pd.read_csv('data/species_toxicity_metadata.csv')\n",
+                "df_clean = pd.read_parquet('data/processed/phase1_audited_observations.parquet')\n",
+                "print(f'Clean Observations Shape: {df_clean.shape}')\n",
+                "df_species.head(10)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۳. نمایش نمودارهای تحلیل اکتشافی (EDA) و ممیزی نشت اطلاعات"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "figure_files = [\n",
+                "    'figures/phase1/fig1_long_tail_distribution.png',\n",
+                "    'figures/phase1/fig2_hierarchy_and_univariate_audit.png',\n",
+                "    'figures/phase1/fig3_spatiotemporal_multivariate_patterns.png',\n",
+                "    'figures/phase1/fig4_lookalike_risk_guilds.png',\n",
+                "    'figures/phase1/fig5_leakage_and_shortcut_baselines.png',\n",
+                "]\n",
+                "for fig_path in figure_files:\n",
+                "    if os.path.exists(fig_path):\n",
+                "        print(f'\\n--- {os.path.basename(fig_path)} ---')\n",
+                "        display(Image(filename=fig_path))"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۴. نتایج کمی نشت اطلاعات (Data Leakage) و خط مبنای اولیه (Phase 1 Baselines)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "print('=== Data Leakage Audit ===')\n",
+                "display(pd.Series(audit_summary['leakage_and_baselines']['leakage_audit']))\n",
+                "\n",
+                "print('\\n=== Phase 1 Baselines (40-Class Classification) ===')\n",
+                "display(pd.DataFrame(audit_summary['leakage_and_baselines']['phase1_baselines_40_classes']))"
+            ],
+        },
+    ]
+
+    notebook_json = {
+        "cells": cells,
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.12.0"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+
+    with open(NOTEBOOK_PATH, "w", encoding="utf-8") as f:
+        json.dump(notebook_json, f, indent=2, ensure_ascii=False)
+
+    print(f"Successfully generated Jupyter Notebook: {NOTEBOOK_PATH}")
+
+
+if __name__ == "__main__":
+    create_phase1_notebook()

@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# Data files (Strict rule: Large datasets must not be uploaded to GitHub)
+data/raw/*
+data/processed/*
+!data/README.md
+!data/species_toxicity_metadata.csv
+*.csv
+*.parquet
+*.tsv
+*.gz
+*.zip
+*.tar
+*.jpg
+*.jpeg
+*.png
+!figures/**/*.png
+!figures/**/*.pdf
+
+# Models and Checkpoints
+models/*.pt
+models/*.pth
+models/*.pkl
+models/*.joblib
+models/*.onnx
+!models/.gitkeep
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS & IDE files
+.DS_Store
+.idea/
+.vscode/

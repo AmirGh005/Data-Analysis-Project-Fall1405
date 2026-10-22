@@ -1,0 +1,280 @@
+project:
+  name: "iNaturalist-Fungi-Risk-Aware-Classification"
+  track: "Track C - iNaturalist Open Data"
+  random_seed: 42
+  phase: 1
+
+data_paths:
+  raw_metadata_csv: "data/raw/fungi_observations_raw.csv"
+  raw_photos_csv: "data/raw/fungi_photos_raw.csv"
+  species_metadata_csv: "data/species_toxicity_metadata.csv"
+  audited_observations_parquet: "data/processed/phase1_audited_observations.parquet"
+  figures_dir: "figures/phase1"
+  summary_stats_json: "reports/phase1/phase1_audit_summary.json"
+
+subset_selection:
+  date_start: "2020-01-01"
+  date_end: "2025-12-31"
+  quality_grade: "research"
+  # Target observations per species (keeps natural long-tail distribution if species has fewer records)
+  max_observations_per_species_na: 350
+  max_observations_per_species_eu: 150
+  regions:
+    north_america:
+      min_lat: 24.0
+      max_lat: 60.0
+      min_lon: -130.0
+      max_lon: -60.0
+    europe:
+      min_lat: 36.0
+      max_lat: 65.0
+      min_lon: -10.0
+      max_lon: 35.0
+
+# 40 Carefully Selected Mushroom Species (20 Edible, 20 Toxic/Deadly/Inedible Look-alikes)
+target_species:
+  # --- GROUP 1: DEADLY & HIGHLY TOXIC (12 Species) ---
+  - scientific_name: "Amanita phalloides"
+    common_name: "Death Cap"
+    family: "Amanitaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Gilled_White_Green_Cap"
+  - scientific_name: "Amanita muscaria"
+    common_name: "Fly Agaric"
+    family: "Amanitaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Red_Orange_Amanita"
+  - scientific_name: "Amanita pantherina"
+    common_name: "Panther Cap"
+    family: "Amanitaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Brown_Spotted_Amanita"
+  - scientific_name: "Amanita bisporigera"
+    common_name: "Eastern Destroying Angel"
+    family: "Amanitaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Pure_White_Agaric"
+  - scientific_name: "Galerina marginata"
+    common_name: "Funeral Bell"
+    family: "Hymenogastraceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Wood_Dwelling_Brown"
+  - scientific_name: "Omphalotus illudens"
+    common_name: "Eastern Jack-o'-lantern"
+    family: "Omphalotaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Omphalotus olearius"
+    common_name: "Western/European Jack-o'-lantern"
+    family: "Omphalotaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Chlorophyllum molybdites"
+    common_name: "False Parasol (The Vomiter)"
+    family: "Agaricaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Large_Scaly_Parasol"
+  - scientific_name: "Gyromitra esculenta"
+    common_name: "False Morel"
+    family: "Discinaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Brain_Honeycomb_Cap"
+  - scientific_name: "Hypholoma fasciculare"
+    common_name: "Sulfur Tuft"
+    family: "Strophariaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Wood_Dwelling_Brown"
+  - scientific_name: "Paxillus involutus"
+    common_name: "Brown Roll-rim"
+    family: "Paxillaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Funnel_Brown_Cap"
+  - scientific_name: "Agaricus xanthodermus"
+    common_name: "Yellow Stainer"
+    family: "Agaricaceae"
+    toxicity_class: "Deadly_Toxic"
+    risk_level: 3
+    lookalike_group: "Pure_White_Agaric"
+
+  # --- GROUP 2: INEDIBLE / MILDLY TOXIC LOOK-ALIKES (8 Species) ---
+  - scientific_name: "Russula emetica"
+    common_name: "The Sickener"
+    family: "Russulaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Red_Purple_Russula"
+  - scientific_name: "Hygrophoropsis aurantiaca"
+    common_name: "False Chanterelle"
+    family: "Hygrophoropsidaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Tylopilus felleus"
+    common_name: "Bitter Bolete"
+    family: "Boletaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Porous_Brown_Bolete"
+  - scientific_name: "Scleroderma citrinum"
+    common_name: "Common Earthball"
+    family: "Sclerodermataceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Round_Puffball_Like"
+  - scientific_name: "Calocera viscosa"
+    common_name: "Yellow Stagshorn"
+    family: "Dacrymycetaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Yellow_Coral_Funnel"
+  - scientific_name: "Pholiota squarrosa"
+    common_name: "Shaggy Scalycap"
+    family: "Strophariaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Wood_Dwelling_Brown"
+  - scientific_name: "Mycena galericulata"
+    common_name: "Common Bonnet"
+    family: "Mycenaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Small_Gilled_Bonnet"
+  - scientific_name: "Trametes versicolor"
+    common_name: "Turkey Tail"
+    family: "Polyporaceae"
+    toxicity_class: "Inedible_MildToxic"
+    risk_level: 2
+    lookalike_group: "Shelf_Polypore"
+
+  # --- GROUP 3: CHOICE EDIBLE SPECIES (20 Species) ---
+  - scientific_name: "Cantharellus cibarius"
+    common_name: "Golden Chanterelle"
+    family: "Cantharellaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Craterellus tubaeformis"
+    common_name: "Winter Chanterelle (Yellowfoot)"
+    family: "Cantharellaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Yellow_Coral_Funnel"
+  - scientific_name: "Craterellus cornucopioides"
+    common_name: "Black Trumpet"
+    family: "Cantharellaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Funnel_Brown_Cap"
+  - scientific_name: "Boletus edulis"
+    common_name: "Porcini (King Bolete)"
+    family: "Boletaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Porous_Brown_Bolete"
+  - scientific_name: "Imleria badia"
+    common_name: "Bay Bolete"
+    family: "Boletaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Porous_Brown_Bolete"
+  - scientific_name: "Suillus luteus"
+    common_name: "Slippery Jack"
+    family: "Suillaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Porous_Brown_Bolete"
+  - scientific_name: "Morchella esculenta"
+    common_name: "Yellow Morel"
+    family: "Morchellaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Brain_Honeycomb_Cap"
+  - scientific_name: "Macrolepiota procera"
+    common_name: "Parasol Mushroom"
+    family: "Agaricaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Large_Scaly_Parasol"
+  - scientific_name: "Coprinus comatus"
+    common_name: "Shaggy Ink Cap"
+    family: "Agaricaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Pure_White_Agaric"
+  - scientific_name: "Agaricus campestris"
+    common_name: "Field Mushroom"
+    family: "Agaricaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Pure_White_Agaric"
+  - scientific_name: "Pleurotus ostreatus"
+    common_name: "Oyster Mushroom"
+    family: "Pleurotaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Shelf_Polypore"
+  - scientific_name: "Laetiporus sulphureus"
+    common_name: "Chicken of the Woods"
+    family: "Fomitopsidaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Shelf_Polypore"
+  - scientific_name: "Armillaria mellea"
+    common_name: "Honey Fungus"
+    family: "Physalacriaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Wood_Dwelling_Brown"
+  - scientific_name: "Flammulina velutipes"
+    common_name: "Velvet Shank (Enoki)"
+    family: "Physalacriaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Wood_Dwelling_Brown"
+  - scientific_name: "Lycoperdon perlatum"
+    common_name: "Common Puffball"
+    family: "Agaricaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Round_Puffball_Like"
+  - scientific_name: "Hydnum repandum"
+    common_name: "Sweet Tooth (Wood Hedgehog)"
+    family: "Hydnaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Lactarius deliciosus"
+    common_name: "Saffron Milk Cap"
+    family: "Russulaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Orange_Chanterelle_Like"
+  - scientific_name: "Russula cyanoxantha"
+    common_name: "Charcoal Burner"
+    family: "Russulaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Red_Purple_Russula"
+  - scientific_name: "Amanita rubescens"
+    common_name: "The Blusher"
+    family: "Amanitaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Brown_Spotted_Amanita"
+  - scientific_name: "Hericium erinaceus"
+    common_name: "Lion's Mane"
+    family: "Hericiaceae"
+    toxicity_class: "Edible"
+    risk_level: 0
+    lookalike_group: "Pure_White_Agaric"

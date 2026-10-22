@@ -1,0 +1,188 @@
+{
+  "phase": 1,
+  "dataset_track": "Track C - iNaturalist Open Data",
+  "saved_processed_data_path": "data/processed/phase1_audited_observations.parquet",
+  "structure_and_quality": {
+    "quality_audit": {
+      "raw_observations_total": 9729,
+      "raw_photos_total": 17490,
+      "exact_duplicate_observations": 45,
+      "missing_or_impossible_gps_count": 56,
+      "extreme_positional_accuracy_gt_10km_count": 116,
+      "captive_or_cultivated_count": 67,
+      "corrupt_photo_dimensions_count": 52,
+      "missing_values_by_column": {
+        "observation_uuid": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "taxon_id": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "scientific_name": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "observer_id": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "observer_handle": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "observed_on": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "time_observed_at": {
+          "count": 406,
+          "percentage": 4.19
+        },
+        "latitude": {
+          "count": 38,
+          "percentage": 0.39
+        },
+        "longitude": {
+          "count": 38,
+          "percentage": 0.39
+        },
+        "positional_accuracy": {
+          "count": 647,
+          "percentage": 6.68
+        },
+        "quality_grade": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "region": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "num_photos": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "captive_cultivated": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "common_name": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "genus": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "family": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "toxicity_class": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "is_toxic_or_inedible": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "is_deadly": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "risk_level": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "lookalike_group": {
+          "count": 0,
+          "percentage": 0.0
+        }
+      }
+    },
+    "structure_audit": {
+      "clean_observations_count": 9561,
+      "unique_taxa_count": 40,
+      "unique_families_count": 22,
+      "unique_observers_count": 1481,
+      "valid_photos_count": 17438,
+      "photos_per_observation": {
+        "mean": 1.81,
+        "median": 1.0,
+        "max": 5,
+        "pct_multi_photo_observations": 47.92
+      },
+      "observations_per_observer": {
+        "mean": 6.46,
+        "median": 3.0,
+        "max": 190,
+        "top_10_pct_observers_share_of_data": 50.95
+      },
+      "regional_split": {
+        "north_america": 6884,
+        "europe": 2677
+      },
+      "toxicity_class_distribution": {
+        "Edible": 5627,
+        "Deadly_Toxic": 2364,
+        "Inedible_MildToxic": 1570
+      }
+    }
+  },
+  "long_tail_analysis": {
+    "max_class_count": 717,
+    "min_class_count": 132,
+    "imbalance_ratio_max_to_min": 5.43,
+    "gini_coefficient": 0.2581,
+    "top_5_species_share_pct": 27.42,
+    "bottom_10_species_share_pct": 14.76,
+    "tiers": [
+      {
+        "frequency_tier": "Tail (<220)",
+        "num_species": 24,
+        "total_observations": 3918,
+        "mean_observations": 163.25
+      },
+      {
+        "frequency_tier": "Medium (220-480)",
+        "num_species": 13,
+        "total_observations": 3852,
+        "mean_observations": 296.3076923076923
+      },
+      {
+        "frequency_tier": "Head (>480)",
+        "num_species": 3,
+        "total_observations": 1791,
+        "mean_observations": 597.0
+      }
+    ]
+  },
+  "leakage_and_baselines": {
+    "leakage_audit": {
+      "naive_photo_split_test_leakage_pct": 64.09,
+      "naive_observation_split_observer_overlap_pct": 95.3,
+      "observer_grouped_split_observation_overlap_pct": 0.0,
+      "observer_grouped_split_observer_overlap_pct": 0.0
+    },
+    "phase1_baselines_40_classes": {
+      "random_guess_theoretical_accuracy_pct": 2.5,
+      "majority_class_baseline": {
+        "val_accuracy_pct": 7.81,
+        "val_macro_f1_pct": 0.36
+      },
+      "season_plus_latitude_baseline": {
+        "val_accuracy_pct": 10.57,
+        "val_macro_f1_pct": 3.22,
+        "val_balanced_acc_pct": 5.38
+      },
+      "full_lat_lon_season_shortcut_model": {
+        "in_domain_na_val_accuracy_pct": 10.18,
+        "in_domain_na_val_macro_f1_pct": 3.2,
+        "geographic_shift_eu_accuracy_pct": 8.97,
+        "geographic_shift_eu_macro_f1_pct": 3.01
+      }
+    }
+  }
+}
