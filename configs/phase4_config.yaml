@@ -1,0 +1,45 @@
+project:
+  name: "iNaturalist-Fungi-Risk-Aware-Classification"
+  track: "Track C - iNaturalist Open Data"
+  random_seed: 42
+  phase: 4
+
+paths:
+  input_dataset_parquet: "data/processed/phase2_prepared_dataset.parquet"
+  input_dataset_csv: "data/processed/phase2_prepared_dataset.csv"
+  input_embeddings_npz: "data/processed/phase2_visual_embeddings.npz"
+  species_metadata_csv: "data/species_toxicity_metadata.csv"
+  phase3_model_bundle: "models/phase3_best_multimodal_bundle.joblib"
+  ablation_table_csv: "reports/phase4/phase4_modality_and_shift_ablation.csv"
+  subgroup_table_csv: "reports/phase4/phase4_subgroup_performance.csv"
+  sensitivity_table_csv: "reports/phase4/phase4_sensitivity_analysis.csv"
+  case_studies_csv: "reports/phase4/phase4_case_level_interpretability.csv"
+  decision_policy_csv: "reports/phase4/phase4_cost_sensitive_decision_curve.csv"
+  summary_json: "reports/phase4/phase4_summary.json"
+  figures_dir: "figures/phase4"
+
+interpretability:
+  permutation_repeats: 8
+  top_k_features: 15
+
+representation_ablation:
+  primary_encoder: "facebook/dinov2-small-patch14-224 (ViT-S/14)"
+  secondary_encoder: "convnext_tiny.fb_in22k (CNN Inductive Bias)"
+  secondary_embedding_dim: 64
+
+decision_making:
+  # Asymmetric Cost Matrix C(true_toxicity, decision_action)
+  # Actions: 0 = "Approve_Safe_Edible", 1 = "Warn_Inedible_or_Toxic", 2 = "Abstain_Refer_to_Expert"
+  cost_matrix:
+    Deadly_Toxic:
+      Approve_Safe_Edible: 100.0
+      Warn_Inedible_or_Toxic: 0.0
+      Abstain_Refer_to_Expert: 1.5
+    Inedible_MildToxic:
+      Approve_Safe_Edible: 20.0
+      Warn_Inedible_or_Toxic: 0.0
+      Abstain_Refer_to_Expert: 1.0
+    Edible:
+      Approve_Safe_Edible: 0.0
+      Warn_Inedible_or_Toxic: 4.0
+      Abstain_Refer_to_Expert: 1.2
