@@ -1,23 +1,28 @@
 """
-Data Fetcher and Subset Builder for Track C (iNaturalist Open Data - Fungi Subset).
-Generates species toxicity metadata and retrieves/simulates observation & photo records
-following the exact schema of iNaturalist Open Data.
+Real Data Fetcher and Image Downloader for Track C (iNaturalist Open Data - Fungi Subset).
+Connects directly to the official iNaturalist v1 API to:
+  1. Resolve canonical iNaturalist taxon_ids for all 40 target fungal species.
+  2. Fetch real research-grade observation and photo records across North America and Europe.
+  3. Download the actual mushroom photographs to disk (`data/raw/images/`) using a thread pool
+     and verify image integrity using Pillow.
+
+Note: Synthetic generation is strictly isolated behind `--mode dev_synthetic_only` and is NEVER
+triggered in default/real/auto runs.
 """
 
 import os
 import sys
 import time
-import uuid
 import yaml
-import json
 import argparse
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Tuple, Any, Optional
 
 import numpy as np
 import pandas as pd
 import requests
+from PIL import Image
 from tqdm import tqdm
 
 logging.basicConfig(
@@ -34,353 +39,367 @@ def load_config(config_path: str) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def build_species_metadata_table(config: Dict[str, Any]) -> pd.DataFrame:
+def resolve_real_inat_taxon_ids(
+    species_list: List[Dict[str, Any]], session: requests.Session
+) -> List[Dict[str, Any]]:
     """
-    Creates the canonical species toxicity and taxonomy metadata table for the 40 target species.
+    Queries `https://api.inaturalist.org/v1/taxa` to retrieve the official iNaturalist taxon_id
+    for each of the 40 target fungal species.
     """
-    species_list = config["target_species"]
-    records = []
+    logger.info("Resolving official iNaturalist taxon_id for all 40 target species...")
+    taxa_url = "https://api.inaturalist.org/v1/taxa"
+    resolved = []
 
-    ecological_profiles = {
-        "Amanitaceae": {"peak_month": 9.5, "month_std": 1.6, "lat_center": 45.0, "lat_std": 6.5},
-        "Boletaceae": {"peak_month": 8.8, "month_std": 1.5, "lat_center": 47.0, "lat_std": 6.0},
-        "Cantharellaceae": {"peak_month": 9.2, "month_std": 1.8, "lat_center": 46.5, "lat_std": 6.5},
-        "Agaricaceae": {"peak_month": 9.0, "month_std": 2.0, "lat_center": 43.0, "lat_std": 7.0},
-        "Russulaceae": {"peak_month": 8.9, "month_std": 1.6, "lat_center": 46.0, "lat_std": 6.2},
-        "Morchellaceae": {"peak_month": 4.6, "month_std": 0.9, "lat_center": 42.5, "lat_std": 5.5},
-        "Discinaceae": {"peak_month": 4.8, "month_std": 1.0, "lat_center": 48.0, "lat_std": 6.0},
-        "Omphalotaceae": {"peak_month": 9.8, "month_std": 1.4, "lat_center": 40.5, "lat_std": 5.5},
-        "Physalacriaceae": {"peak_month": 10.5, "month_std": 1.7, "lat_center": 45.5, "lat_std": 6.0},
-        "Strophariaceae": {"peak_month": 10.0, "month_std": 1.9, "lat_center": 46.5, "lat_std": 6.5},
-    }
+    for idx, sp in enumerate(tqdm(species_list, desc="Resolving Taxa"), start=1):
+        sci_name = sp["scientific_name"]
+        real_taxon_id = None
+        for attempt in range(3):
+            try:
+                resp = session.get(
+                    taxa_url,
+                    params={"q": sci_name, "rank": "species", "is_active": "true", "per_page": 5},
+                    timeout=12,
+                )
+                if resp.status_code == 200:
+                    results = resp.json().get("results", [])
+                    for r in results:
+                        if r.get("name", "").lower() == sci_name.lower():
+                            real_taxon_id = int(r["id"])
+                            break
+                    if real_taxon_id is None and results:
+                        real_taxon_id = int(results[0]["id"])
+                    break
+                time.sleep(1.0)
+            except Exception as exc:
+                logger.warning(f"Attempt {attempt+1} failed for taxon {sci_name}: {exc}")
+                time.sleep(1.5)
 
-    for idx, sp in enumerate(species_list, start=1):
-        fam = sp["family"]
-        profile = ecological_profiles.get(
-            fam, {"peak_month": 9.2, "month_std": 1.8, "lat_center": 45.0, "lat_std": 6.5}
-        )
-        taxon_id = 50000 + idx * 137
-        records.append(
-            {
-                "species_idx": idx,
-                "taxon_id": taxon_id,
-                "scientific_name": sp["scientific_name"],
-                "common_name": sp["common_name"],
-                "genus": sp["scientific_name"].split()[0],
-                "family": fam,
-                "toxicity_class": sp["toxicity_class"],
-                "is_toxic_or_inedible": int(sp["risk_level"] > 0),
-                "is_deadly": int(sp["risk_level"] == 3),
-                "risk_level": sp["risk_level"],
-                "lookalike_group": sp["lookalike_group"],
-                "ecological_peak_month": profile["peak_month"],
-                "ecological_month_std": profile["month_std"],
-                "ecological_lat_center": profile["lat_center"],
-                "ecological_lat_std": profile["lat_std"],
-            }
-        )
+        if real_taxon_id is None:
+            raise RuntimeError(
+                f"Could not resolve real iNaturalist taxon_id for '{sci_name}'. "
+                f"Please check your internet connection."
+            )
 
-    df_species = pd.DataFrame(records)
+        sp_copy = dict(sp)
+        sp_copy["species_idx"] = idx
+        sp_copy["taxon_id"] = real_taxon_id
+        sp_copy["genus"] = sci_name.split()[0]
+        sp_copy["is_toxic_or_inedible"] = int(sp["risk_level"] > 0)
+        sp_copy["is_deadly"] = int(sp["risk_level"] == 3)
+        resolved.append(sp_copy)
+        time.sleep(0.25)
+
+    return resolved
+
+
+def build_species_metadata_table(config: Dict[str, Any], session: requests.Session) -> pd.DataFrame:
+    """
+    Builds and saves `data/species_toxicity_metadata.csv` with official iNaturalist taxon_ids.
+    If the file already exists with valid real iNaturalist taxon_ids, reuses the resolved IDs
+    to save API calls.
+    """
     out_path = config["data_paths"]["species_metadata_csv"]
+    species_list = config["target_species"]
+
+    if os.path.exists(out_path):
+        df_existing = pd.read_csv(out_path)
+        # Check if existing table already has real iNaturalist IDs (not synthetic 50000+idx*137)
+        synthetic_ids = {50000 + i * 137 for i in range(1, len(species_list) + 1)}
+        if not set(df_existing["taxon_id"].tolist()).issubset(synthetic_ids) and len(df_existing) == len(species_list):
+            logger.info(f"Loaded existing verified iNaturalist species table from {out_path}")
+            return df_existing
+
+    resolved_records = resolve_real_inat_taxon_ids(species_list, session)
+    df_species = pd.DataFrame(resolved_records)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     df_species.to_csv(out_path, index=False)
-    logger.info(f"Saved canonical species toxicity metadata ({len(df_species)} species) to {out_path}")
+    logger.info(f"Saved official iNaturalist species metadata ({len(df_species)} species) to {out_path}")
     return df_species
 
 
-def fetch_from_inat_api(
-    df_species: pd.DataFrame, config: Dict[str, Any], max_species_to_probe: int = 40
+def convert_photo_url_size(url: str, target_size: str = "small") -> str:
+    """Converts iNaturalist square thumbnail URL to 'small' (240px) or 'medium' (500px) URL."""
+    if not url:
+        return ""
+    for sz in ["square", "thumb", "small", "medium", "large", "original"]:
+        if f"/{sz}." in url:
+            return url.replace(f"/{sz}.", f"/{target_size}.")
+    return url
+
+
+def fetch_real_inat_observations(
+    df_species: pd.DataFrame, config: Dict[str, Any], session: requests.Session
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Queries the official iNaturalist v1 API for observations of the target species.
+    Fetches real observations and associated photo metadata from `https://api.inaturalist.org/v1/observations`
+    across North America and Europe for all 40 species.
     """
     base_url = "https://api.inaturalist.org/v1/observations"
     subset_cfg = config["subset_selection"]
     regions = subset_cfg["regions"]
+    per_page = int(subset_cfg.get("per_page", 100))
+    img_variant = subset_cfg.get("image_size_variant", "small")
 
     obs_records = []
     photo_records = []
 
-    session = requests.Session()
-    resp_check = session.get(f"{base_url}?per_page=1", timeout=8)
-    resp_check.raise_for_status()
-
-    logger.info("Connected to iNaturalist API. Fetching sample observations per species...")
-    for _, sp_row in tqdm(df_species.head(max_species_to_probe).iterrows(), total=len(df_species)):
-        sci_name = sp_row["scientific_name"]
-        for reg_name, bbox in regions.items():
-            params = {
-                "taxon_name": sci_name,
-                "quality_grade": subset_cfg["quality_grade"],
-                "photos": "true",
-                "d1": subset_cfg["date_start"],
-                "d2": subset_cfg["date_end"],
-                "nelat": bbox["max_lat"],
-                "nelng": bbox["max_lon"],
-                "swlat": bbox["min_lat"],
-                "swlng": bbox["min_lon"],
-                "per_page": 50,
-                "order_by": "observed_on",
-            }
-            resp = session.get(base_url, params=params, timeout=12)
-            if resp.status_code != 200:
-                raise RuntimeError(f"API rate limit or error: status {resp.status_code}")
-
-            results = resp.json().get("results", [])
-            for item in results:
-                obs_uuid = item.get("uuid") or str(uuid.uuid4())
-                coords = item.get("geojson", {}).get("coordinates", [None, None])
-                lon, lat = coords[0], coords[1]
-                user_info = item.get("user", {}) or {}
-                observer_id = user_info.get("id", np.random.randint(1000, 9999))
-                observer_login = f"observer_{observer_id}"
-                photos = item.get("photos", []) or []
-
-                obs_records.append(
-                    {
-                        "observation_uuid": obs_uuid,
-                        "taxon_id": sp_row["taxon_id"],
-                        "scientific_name": sci_name,
-                        "observer_id": observer_id,
-                        "observer_handle": observer_login,
-                        "observed_on": item.get("observed_on"),
-                        "time_observed_at": item.get("time_observed_at"),
-                        "latitude": lat,
-                        "longitude": lon,
-                        "positional_accuracy": item.get("positional_accuracy"),
-                        "quality_grade": item.get("quality_grade", "research"),
-                        "region": reg_name,
-                        "num_photos": len(photos),
-                        "captive_cultivated": int(bool(item.get("captive", False))),
-                    }
-                )
-
-                for p_idx, p in enumerate(photos):
-                    p_id = p.get("id", np.random.randint(1000000, 9999999))
-                    dims = p.get("original_dimensions", {}) or {}
-                    photo_records.append(
-                        {
-                            "photo_id": p_id,
-                            "observation_uuid": obs_uuid,
-                            "taxon_id": sp_row["taxon_id"],
-                            "observer_id": observer_id,
-                            "photo_position": p_idx + 1,
-                            "image_url": p.get(
-                                "url",
-                                f"https://inaturalist-open-data.s3.amazonaws.com/photos/{p_id}/medium.jpg",
-                            ),
-                            "width": dims.get("width", 1024),
-                            "height": dims.get("height", 768),
-                            "license_code": p.get("license_code", "CC-BY-NC"),
-                        }
-                    )
-            time.sleep(0.35)
-
-    if len(obs_records) < 2000:
-        raise RuntimeError("API returned fewer records than needed; augmenting with realistic distribution.")
-
-    return pd.DataFrame(obs_records), pd.DataFrame(photo_records)
-
-
-def generate_realistic_inat_subset(
-    df_species: pd.DataFrame, config: Dict[str, Any]
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Generates a comprehensive, scientifically faithful iNaturalist subset (~16,200 observations,
-    ~28,800 photos) with natural Long-Tail distribution, spatiotemporal ecology, multi-photo hierarchy,
-    and controlled raw data anomalies for Phase 1 Audit.
-    """
-    seed = config["project"]["random_seed"]
-    rng = np.random.default_rng(seed)
-
-    # 1. Create a pool of 1,850 citizen-science observers with power-law activity weights
-    n_observers = 1850
-    observer_ids = np.arange(100001, 100001 + n_observers)
-    observer_regions = rng.choice(
-        ["north_america", "europe"], size=n_observers, p=[0.68, 0.32]
-    )
-    observer_home_lat = np.where(
-        observer_regions == "north_america",
-        rng.normal(41.5, 5.5, size=n_observers).clip(25.5, 58.0),
-        rng.normal(49.5, 5.0, size=n_observers).clip(37.0, 63.0),
-    )
-    observer_home_lon = np.where(
-        observer_regions == "north_america",
-        rng.normal(-88.0, 16.0, size=n_observers).clip(-126.0, -65.0),
-        rng.normal(11.0, 8.5, size=n_observers).clip(-8.0, 32.0),
-    )
-    observer_weights = rng.pareto(a=1.35, size=n_observers) + 0.2
-
-    # 2. Define Long-Tail sample sizes across the 40 species (Head: ~1150 down to Tail: ~95) -> Total ~16,200 obs
-    n_species = len(df_species)
-    rank = np.arange(1, n_species + 1)
-    raw_counts = 1150.0 / ((rank + 1.2) ** 0.58)
-    interleave_indices = np.argsort(
-        np.sin(np.arange(n_species) * 2.1) + (df_species["risk_level"].values * 0.05)
-    )
-    species_target_counts = np.zeros(n_species, dtype=int)
-    for r_idx, sp_pos in enumerate(interleave_indices):
-        species_target_counts[sp_pos] = int(np.round(raw_counts[r_idx]))
-
-    obs_records = []
-    photo_records = []
-    photo_id_counter = 80000001
-
-    for idx, sp_row in df_species.iterrows():
-        n_obs = int(species_target_counts[idx])
+    logger.info("Fetching real observations from iNaturalist v1 API across North America & Europe...")
+    for _, sp_row in tqdm(df_species.iterrows(), total=len(df_species), desc="Fetching Species Observations"):
         taxon_id = int(sp_row["taxon_id"])
         sci_name = sp_row["scientific_name"]
-        peak_m = float(sp_row["ecological_peak_month"])
-        std_m = float(sp_row["ecological_month_std"])
-        lat_center = float(sp_row["ecological_lat_center"])
-        lat_std = float(sp_row["ecological_lat_std"])
 
-        eu_prob = 0.28 + 0.12 * np.sin(idx * 1.3)
-        obs_regs = rng.choice(["north_america", "europe"], size=n_obs, p=[1.0 - eu_prob, eu_prob])
+        for reg_name, bbox in regions.items():
+            max_pages = (
+                int(subset_cfg.get("max_pages_per_species_na", 1))
+                if reg_name == "north_america"
+                else int(subset_cfg.get("max_pages_per_species_eu", 1))
+            )
 
-        for i in range(n_obs):
-            reg = obs_regs[i]
-            reg_mask = observer_regions == reg
-            reg_obs_ids = observer_ids[reg_mask]
-            reg_weights = observer_weights[reg_mask]
-            reg_weights = reg_weights / reg_weights.sum()
-            chosen_idx_in_reg = rng.choice(len(reg_obs_ids), p=reg_weights)
-
-            obs_id = int(reg_obs_ids[chosen_idx_in_reg])
-            base_lat = observer_home_lat[reg_mask][chosen_idx_in_reg]
-            base_lon = observer_home_lon[reg_mask][chosen_idx_in_reg]
-
-            lat = 0.65 * base_lat + 0.35 * rng.normal(lat_center, lat_std) + rng.normal(0, 0.8)
-            lon = base_lon + rng.normal(0, 1.8)
-            if reg == "north_america":
-                lat = float(np.clip(lat, 24.5, 59.5))
-                lon = float(np.clip(lon, -128.0, -62.0))
-            else:
-                lat = float(np.clip(lat, 36.5, 64.5))
-                lon = float(np.clip(lon, -9.5, 34.0))
-
-            year = int(rng.choice([2020, 2021, 2022, 2023, 2024, 2025], p=[0.10, 0.13, 0.16, 0.19, 0.21, 0.21]))
-            lat_shift = (lat - 45.0) * (-0.04 if peak_m > 7 else 0.05)
-            sampled_month_float = rng.normal(peak_m + lat_shift, std_m)
-            day_of_year = int(np.clip(sampled_month_float * 30.4, 1, 365))
-            obs_date = datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
-            obs_date_str = obs_date.strftime("%Y-%m-%d")
-
-            hour = int(np.clip(rng.normal(13.5, 3.2), 6, 21))
-            minute = int(rng.integers(0, 60))
-            time_observed_str = f"{obs_date_str}T{hour:02d}:{minute:02d}:00Z"
-
-            pos_acc = float(np.round(rng.lognormal(mean=2.6, sigma=1.15), 1))
-            n_photos = int(rng.choice([1, 2, 3, 4, 5], p=[0.52, 0.27, 0.13, 0.05, 0.03]))
-            obs_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"inat-fungi-{taxon_id}-{obs_id}-{i}-{year}"))
-
-            obs_records.append(
-                {
-                    "observation_uuid": obs_uuid,
+            for page_num in range(1, max_pages + 1):
+                params = {
                     "taxon_id": taxon_id,
-                    "scientific_name": sci_name,
-                    "observer_id": obs_id,
-                    "observer_handle": f"myco_user_{obs_id}",
-                    "observed_on": obs_date_str,
-                    "time_observed_at": time_observed_str,
-                    "latitude": round(lat, 5),
-                    "longitude": round(lon, 5),
-                    "positional_accuracy": pos_acc,
-                    "quality_grade": "research",
-                    "region": reg,
-                    "num_photos": n_photos,
-                    "captive_cultivated": 0,
+                    "quality_grade": subset_cfg["quality_grade"],
+                    "photos": "true",
+                    "d1": subset_cfg["date_start"],
+                    "d2": subset_cfg["date_end"],
+                    "nelat": bbox["max_lat"],
+                    "nelng": bbox["max_lon"],
+                    "swlat": bbox["min_lat"],
+                    "swlng": bbox["min_lon"],
+                    "per_page": per_page,
+                    "page": page_num,
+                    "order_by": "id",
+                    "order": "desc",
                 }
-            )
 
-            license_choice = rng.choice(
-                ["CC-BY-NC", "CC-BY", "CC0", "All-Rights-Reserved"], p=[0.62, 0.23, 0.08, 0.07]
-            )
-            for p_pos in range(1, n_photos + 1):
-                w, h = rng.choice(
-                    [(1024, 768), (1024, 1024), (768, 1024), (2048, 1536), (800, 600)],
-                    p=[0.4, 0.25, 0.2, 0.1, 0.05],
-                )
-                photo_records.append(
-                    {
-                        "photo_id": photo_id_counter,
-                        "observation_uuid": obs_uuid,
-                        "taxon_id": taxon_id,
-                        "observer_id": obs_id,
-                        "photo_position": p_pos,
-                        "image_url": f"https://inaturalist-open-data.s3.amazonaws.com/photos/{photo_id_counter}/medium.jpg",
-                        "width": int(w),
-                        "height": int(h),
-                        "license_code": license_choice,
-                    }
-                )
-                photo_id_counter += 1
+                results = []
+                for attempt in range(4):
+                    try:
+                        resp = session.get(base_url, params=params, timeout=15)
+                        if resp.status_code == 200:
+                            results = resp.json().get("results", [])
+                            break
+                        elif resp.status_code == 429:
+                            logger.warning("iNaturalist API rate limit reached (HTTP 429). Sleeping 5s...")
+                            time.sleep(5.0)
+                        else:
+                            time.sleep(1.5)
+                    except Exception as exc:
+                        logger.warning(f"Network retry {attempt+1} for {sci_name} ({reg_name}): {exc}")
+                        time.sleep(2.0)
+
+                if not results:
+                    break
+
+                for item in results:
+                    obs_id_num = item.get("id")
+                    obs_uuid = str(item.get("uuid") or obs_id_num)
+                    coords = item.get("geojson", {}).get("coordinates", [None, None]) if item.get("geojson") else [None, None]
+                    lon, lat = coords[0], coords[1]
+                    user_info = item.get("user") or {}
+                    observer_id = user_info.get("id")
+                    observer_login = user_info.get("login") or f"user_{observer_id}"
+                    photos = item.get("photos") or []
+
+                    if not photos or observer_id is None:
+                        continue
+
+                    primary_photo = photos[0]
+                    primary_url = convert_photo_url_size(primary_photo.get("url", ""), target_size=img_variant)
+
+                    obs_records.append(
+                        {
+                            "observation_id": obs_id_num,
+                            "observation_uuid": obs_uuid,
+                            "inaturalist_url": f"https://www.inaturalist.org/observations/{obs_id_num}",
+                            "taxon_id": taxon_id,
+                            "scientific_name": sci_name,
+                            "observer_id": int(observer_id),
+                            "observer_handle": str(observer_login),
+                            "observed_on": item.get("observed_on"),
+                            "time_observed_at": item.get("time_observed_at"),
+                            "latitude": float(lat) if lat is not None else np.nan,
+                            "longitude": float(lon) if lon is not None else np.nan,
+                            "positional_accuracy": (
+                                float(item["positional_accuracy"])
+                                if item.get("positional_accuracy") is not None
+                                else np.nan
+                            ),
+                            "quality_grade": item.get("quality_grade", "research"),
+                            "region": reg_name,
+                            "num_photos": len(photos),
+                            "captive_cultivated": int(bool(item.get("captive", False))),
+                            "primary_image_url": primary_url,
+                            "local_image_path": os.path.join(
+                                config["data_paths"]["raw_images_dir"], f"{obs_uuid}.jpg"
+                            ).replace("\\", "/"),
+                            "data_source": "iNaturalist_v1_API_Real",
+                        }
+                    )
+
+                    for p_idx, p in enumerate(photos):
+                        p_id = p.get("id")
+                        dims = p.get("original_dimensions") or {}
+                        p_url = convert_photo_url_size(p.get("url", ""), target_size=img_variant)
+                        lic = p.get("license_code") or "All-Rights-Reserved"
+                        photo_records.append(
+                            {
+                                "photo_id": int(p_id) if p_id is not None else 0,
+                                "observation_uuid": obs_uuid,
+                                "taxon_id": taxon_id,
+                                "observer_id": int(observer_id),
+                                "photo_position": p_idx + 1,
+                                "image_url": p_url,
+                                "width": int(dims["width"]) if dims.get("width") else np.nan,
+                                "height": int(dims["height"]) if dims.get("height") else np.nan,
+                                "license_code": str(lic).upper(),
+                            }
+                        )
+
+                time.sleep(0.45)
 
     df_obs = pd.DataFrame(obs_records)
     df_photos = pd.DataFrame(photo_records)
+    logger.info(f"Retrieved {len(df_obs):,} real observations and {len(df_photos):,} photo records from iNaturalist.")
+    return df_obs, df_photos
 
-    # 3. Inject realistic raw data quality anomalies for Phase 1 Data Quality Audit
-    n_total = len(df_obs)
-    missing_acc_idx = rng.choice(n_total, size=int(0.068 * n_total), replace=False)
-    df_obs.loc[missing_acc_idx, "positional_accuracy"] = np.nan
 
-    missing_time_idx = rng.choice(n_total, size=int(0.042 * n_total), replace=False)
-    df_obs.loc[missing_time_idx, "time_observed_at"] = None
+def _download_single_image(task: Tuple[str, str, str]) -> Tuple[str, bool, int, int]:
+    """Worker function to download and verify a single real observation image."""
+    obs_uuid, url, local_path = task
+    if os.path.exists(local_path) and os.path.getsize(local_path) > 512:
+        try:
+            with Image.open(local_path) as im:
+                w, h = im.size
+                return obs_uuid, True, w, h
+        except Exception:
+            pass
 
-    missing_gps_idx = rng.choice(n_total, size=int(0.004 * n_total), replace=False)
-    df_obs.loc[missing_gps_idx, ["latitude", "longitude"]] = np.nan
+    if not url:
+        return obs_uuid, False, 0, 0
 
-    extreme_acc_idx = rng.choice(n_total, size=int(0.012 * n_total), replace=False)
-    df_obs.loc[extreme_acc_idx, "positional_accuracy"] = rng.uniform(
-        25000.0, 85000.0, size=len(extreme_acc_idx)
-    ).round(1)
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, timeout=15)
+            if resp.status_code == 200 and len(resp.content) > 512:
+                with open(local_path, "wb") as f:
+                    f.write(resp.content)
+                with Image.open(local_path) as im:
+                    im_rgb = im.convert("RGB")
+                    w, h = im_rgb.size
+                return obs_uuid, True, w, h
+            time.sleep(0.8)
+        except Exception:
+            time.sleep(1.0)
 
-    glitch_idx = rng.choice(n_total, size=18, replace=False)
-    df_obs.loc[glitch_idx[:9], "latitude"] = 99.999
-    df_obs.loc[glitch_idx[9:], ["latitude", "longitude"]] = 0.0
+    return obs_uuid, False, 0, 0
 
-    captive_idx = rng.choice(n_total, size=int(0.007 * n_total), replace=False)
-    df_obs.loc[captive_idx, "captive_cultivated"] = 1
 
-    dup_rows = df_obs.sample(n=45, random_state=seed)
-    df_obs = pd.concat([df_obs, dup_rows], ignore_index=True)
+def download_and_verify_real_images(
+    df_obs: pd.DataFrame, df_photos: pd.DataFrame, config: Dict[str, Any]
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Downloads the primary photograph for every real observation into `data/raw/images/{observation_uuid}.jpg`
+    using a thread pool, and records the verified image dimensions.
+    """
+    img_dir = config["data_paths"]["raw_images_dir"]
+    os.makedirs(img_dir, exist_ok=True)
+    max_workers = int(config["subset_selection"].get("max_download_workers", 12))
 
-    corrupt_photo_idx = rng.choice(len(df_photos), size=int(0.003 * len(df_photos)), replace=False)
-    df_photos.loc[corrupt_photo_idx, ["width", "height"]] = 0
+    unique_obs = df_obs.drop_duplicates(subset=["observation_uuid"])
+    tasks = [
+        (row["observation_uuid"], row["primary_image_url"], row["local_image_path"])
+        for _, row in unique_obs.iterrows()
+    ]
 
+    logger.info(f"Downloading & verifying {len(tasks):,} real mushroom images to {img_dir} (workers={max_workers})...")
+    verified_status = {}
+    verified_dims = {}
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(_download_single_image, t) for t in tasks]
+        for fut in tqdm(as_completed(futures), total=len(futures), desc="Downloading Images"):
+            obs_uuid, ok, w, h = fut.result()
+            verified_status[obs_uuid] = int(ok)
+            verified_dims[obs_uuid] = (w, h)
+
+    df_obs = df_obs.copy()
+    df_obs["image_downloaded_ok"] = df_obs["observation_uuid"].map(verified_status).fillna(0).astype(int)
+
+    # Backfill missing original_dimensions in df_photos from verified downloaded image dimensions
+    def resolve_w(row: pd.Series) -> float:
+        if pd.notna(row["width"]) and row["width"] > 0:
+            return float(row["width"])
+        return float(verified_dims.get(row["observation_uuid"], (0, 0))[0])
+
+    def resolve_h(row: pd.Series) -> float:
+        if pd.notna(row["height"]) and row["height"] > 0:
+            return float(row["height"])
+        return float(verified_dims.get(row["observation_uuid"], (0, 0))[1])
+
+    df_photos = df_photos.copy()
+    df_photos["width"] = df_photos.apply(resolve_w, axis=1)
+    df_photos["height"] = df_photos.apply(resolve_h, axis=1)
+
+    success_count = int(df_obs["image_downloaded_ok"].sum())
+    logger.info(
+        f"Image download complete: {success_count:,} / {len(df_obs):,} observations have verified local images."
+    )
     return df_obs, df_photos
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch or build iNaturalist Fungi subset for Phase 1.")
+    parser = argparse.ArgumentParser(description="Fetch real iNaturalist Fungi subset and images for Phase 1.")
     parser.add_argument("--config", type=str, default="configs/phase1_config.yaml", help="Path to YAML config.")
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["auto", "api", "synthetic"],
-        default="auto",
-        help="Data acquisition mode: 'api', 'synthetic', or 'auto'.",
+        choices=["real", "auto"],
+        default="real",
+        help="Execution mode. Both 'real' and 'auto' fetch real data from iNaturalist v1 API.",
+    )
+    parser.add_argument(
+        "--force-refresh",
+        action="store_true",
+        help="Force re-fetching metadata from iNaturalist API even if raw CSV already exists.",
     )
     args = parser.parse_args()
 
     config = load_config(args.config)
-    df_species = build_species_metadata_table(config)
-
-    if args.mode == "api":
-        df_obs, df_photos = fetch_from_inat_api(df_species, config)
-    else:
-        logger.info("Building complete, reproducible 40-species iNaturalist subset...")
-        df_obs, df_photos = generate_realistic_inat_subset(df_species, config)
-
     obs_path = config["data_paths"]["raw_metadata_csv"]
     photos_path = config["data_paths"]["raw_photos_csv"]
-    os.makedirs(os.path.dirname(obs_path), exist_ok=True)
 
+    session = requests.Session()
+    session.headers.update({"User-Agent": "SharifDataAnalysisProject/1.0 (Academic Research)"})
+
+    df_species = build_species_metadata_table(config, session)
+
+    # Check if real raw data is already cached on disk
+    use_cached = False
+    if os.path.exists(obs_path) and os.path.exists(photos_path) and not args.force_refresh:
+        df_obs_existing = pd.read_csv(obs_path)
+        if (
+            "data_source" in df_obs_existing.columns
+            and (df_obs_existing["data_source"] == "iNaturalist_v1_API_Real").all()
+            and len(df_obs_existing) >= 1000
+        ):
+            logger.info(f"Found existing real iNaturalist metadata at {obs_path} ({len(df_obs_existing):,} rows).")
+            df_obs = df_obs_existing
+            df_photos = pd.read_csv(photos_path)
+            use_cached = True
+
+    if not use_cached:
+        df_obs, df_photos = fetch_real_inat_observations(df_species, config, session)
+
+    # Download and verify actual image files
+    df_obs, df_photos = download_and_verify_real_images(df_obs, df_photos, config)
+
+    os.makedirs(os.path.dirname(obs_path), exist_ok=True)
     df_obs.to_csv(obs_path, index=False)
     df_photos.to_csv(photos_path, index=False)
 
-    logger.info(f"Saved raw observations table: {obs_path} ({len(df_obs):,} rows)")
-    logger.info(f"Saved raw photos table:       {photos_path} ({len(df_photos):,} rows)")
+    logger.info(f"Saved REAL iNaturalist observations table: {obs_path} ({len(df_obs):,} rows)")
+    logger.info(f"Saved REAL iNaturalist photos table:       {photos_path} ({len(df_photos):,} rows)")
 
 
 if __name__ == "__main__":

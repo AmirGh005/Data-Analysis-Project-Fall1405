@@ -2,47 +2,47 @@
   "phase": 4,
   "global_interpretability": {
     "modality_group_macro_f1_drops_pct": {
-      "Visual Backbone (DINOv2 64-D)": 38.49,
-      "Seasonal Phenology (doy_sin, doy_cos, bioclimatic)": 4.38,
-      "Spatial Location (geo_x, geo_y, geo_z, lat_dev)": 0.68,
-      "Observation Effort & Framing (num_photos, aspect, MP)": 0.18,
-      "Diurnal & Uncertainty (hour, GPS error, missing flags)": 0.37
+      "Visual Backbone (DINOv2 Real PCA-64)": 78.21,
+      "Seasonal Phenology (doy_sin, doy_cos, bioclimatic)": 3.47,
+      "Spatial Location (geo_x, geo_y, geo_z, lat_dev)": 6.55,
+      "Observation Effort & Framing (num_photos, aspect, MP)": 0.7,
+      "Diurnal & Uncertainty (hour, GPS error, missing flags)": 0.49
     },
     "top_5_metadata_features": [
       {
-        "feature_name": "doy_sin",
-        "modality": "Spatiotemporal / Quality Metadata",
-        "perm_macro_f1_drop_pct": 2.01,
-        "perm_std_pct": 0.326,
-        "linear_coef_l2_norm": 6.396
-      },
-      {
         "feature_name": "doy_cos",
         "modality": "Spatiotemporal / Quality Metadata",
-        "perm_macro_f1_drop_pct": -0.239,
-        "perm_std_pct": 0.513,
-        "linear_coef_l2_norm": 4.9791
+        "perm_macro_f1_drop_pct": 2.199,
+        "perm_std_pct": 0.583,
+        "linear_coef_l2_norm": 4.4861
       },
       {
-        "feature_name": "geo_z",
+        "feature_name": "geo_x",
         "modality": "Spatiotemporal / Quality Metadata",
-        "perm_macro_f1_drop_pct": 0.612,
-        "perm_std_pct": 0.252,
-        "linear_coef_l2_norm": 4.0668
+        "perm_macro_f1_drop_pct": 1.419,
+        "perm_std_pct": 0.692,
+        "linear_coef_l2_norm": 4.4015
+      },
+      {
+        "feature_name": "doy_sin",
+        "modality": "Spatiotemporal / Quality Metadata",
+        "perm_macro_f1_drop_pct": 1.429,
+        "perm_std_pct": 0.387,
+        "linear_coef_l2_norm": 3.7619
       },
       {
         "feature_name": "geo_y",
         "modality": "Spatiotemporal / Quality Metadata",
-        "perm_macro_f1_drop_pct": 0.498,
-        "perm_std_pct": 0.364,
-        "linear_coef_l2_norm": 3.0512
+        "perm_macro_f1_drop_pct": 0.326,
+        "perm_std_pct": 0.336,
+        "linear_coef_l2_norm": 3.347
       },
       {
-        "feature_name": "bioclimatic_lat_doy_interaction",
+        "feature_name": "geo_z",
         "modality": "Spatiotemporal / Quality Metadata",
-        "perm_macro_f1_drop_pct": 1.207,
-        "perm_std_pct": 0.264,
-        "linear_coef_l2_norm": 2.8342
+        "perm_macro_f1_drop_pct": 1.277,
+        "perm_std_pct": 0.319,
+        "linear_coef_l2_norm": 2.6344
       }
     ]
   },
@@ -50,154 +50,164 @@
     "ablation_and_geographic_shift": [
       {
         "configuration": "1_Metadata_Only_Baseline (M2 GBDT)",
-        "na_in_domain_acc_pct": 8.73,
-        "na_in_domain_macro_f1_pct": 4.9,
-        "na_tail_recall_pct": 0.85,
-        "eu_shift_acc_pct": 7.62,
-        "eu_shift_macro_f1_pct": 3.62,
-        "eu_tail_recall_pct": 1.23,
-        "geographic_shift_f1_drop_pct": 1.27
+        "na_in_domain_acc_pct": 28.6,
+        "na_in_domain_macro_f1_pct": 28.73,
+        "na_tail_recall_pct": 29.25,
+        "eu_shift_acc_pct": 5.61,
+        "eu_shift_macro_f1_pct": 3.25,
+        "eu_tail_recall_pct": 2.92,
+        "geographic_shift_f1_drop_pct": 25.48
       },
       {
         "configuration": "2_Image_Only_Baseline (DINOv2 ViT-S/14)",
-        "na_in_domain_acc_pct": 46.18,
-        "na_in_domain_macro_f1_pct": 39.31,
-        "na_tail_recall_pct": 33.27,
-        "eu_shift_acc_pct": 42.81,
-        "eu_shift_macro_f1_pct": 38.14,
-        "eu_tail_recall_pct": 34.42,
-        "geographic_shift_f1_drop_pct": 1.16
+        "na_in_domain_acc_pct": 77.44,
+        "na_in_domain_macro_f1_pct": 77.14,
+        "na_tail_recall_pct": 80.53,
+        "eu_shift_acc_pct": 61.48,
+        "eu_shift_macro_f1_pct": 56.61,
+        "eu_tail_recall_pct": 60.92,
+        "geographic_shift_f1_drop_pct": 20.53
       },
       {
-        "configuration": "3_Alt_Backbone_Multimodal (ConvNeXt-Tiny CNN)",
-        "na_in_domain_acc_pct": 14.08,
-        "na_in_domain_macro_f1_pct": 12.51,
-        "na_tail_recall_pct": 10.48,
-        "eu_shift_acc_pct": 14.53,
-        "eu_shift_macro_f1_pct": 12.68,
-        "eu_tail_recall_pct": 11.16,
-        "geographic_shift_f1_drop_pct": -0.17
+        "configuration": "3_Secondary_Backbone_Multimodal (Real ConvNeXt-Tiny)",
+        "na_in_domain_acc_pct": 84.01,
+        "na_in_domain_macro_f1_pct": 83.67,
+        "na_tail_recall_pct": 85.5,
+        "eu_shift_acc_pct": 65.16,
+        "eu_shift_macro_f1_pct": 60.91,
+        "eu_tail_recall_pct": 69.0,
+        "geographic_shift_f1_drop_pct": 22.75
       },
       {
-        "configuration": "4_Naive_Multimodal_With_Raw_Longitude (M5)",
-        "na_in_domain_acc_pct": 45.74,
-        "na_in_domain_macro_f1_pct": 42.0,
-        "na_tail_recall_pct": 40.51,
-        "eu_shift_acc_pct": 32.84,
-        "eu_shift_macro_f1_pct": 26.14,
-        "eu_tail_recall_pct": 29.97,
-        "geographic_shift_f1_drop_pct": 15.87
+        "configuration": "4_Naive_Multimodal_All_Coords (M5 Raw GPS)",
+        "na_in_domain_acc_pct": 82.06,
+        "na_in_domain_macro_f1_pct": 82.63,
+        "na_tail_recall_pct": 83.55,
+        "eu_shift_acc_pct": 43.16,
+        "eu_shift_macro_f1_pct": 38.96,
+        "eu_tail_recall_pct": 49.69,
+        "geographic_shift_f1_drop_pct": 43.67
       },
       {
-        "configuration": "5_GeoInvariant_Ecological_Multimodal (M5 -geo_x/y)",
-        "na_in_domain_acc_pct": 45.96,
-        "na_in_domain_macro_f1_pct": 42.31,
-        "na_tail_recall_pct": 41.36,
-        "eu_shift_acc_pct": 41.73,
-        "eu_shift_macro_f1_pct": 38.07,
-        "eu_tail_recall_pct": 36.56,
-        "geographic_shift_f1_drop_pct": 4.24
+        "configuration": "5_Longitude_Ablated_Multimodal (-geo_x/y, Keeps Lat)",
+        "na_in_domain_acc_pct": 81.53,
+        "na_in_domain_macro_f1_pct": 81.92,
+        "na_tail_recall_pct": 84.8,
+        "eu_shift_acc_pct": 60.29,
+        "eu_shift_macro_f1_pct": 54.85,
+        "eu_tail_recall_pct": 63.46,
+        "geographic_shift_f1_drop_pct": 27.08
       },
       {
-        "configuration": "6_Dual_Backbone_GeoInvariant_Ensemble (ViT + CNN)",
-        "na_in_domain_acc_pct": 45.31,
-        "na_in_domain_macro_f1_pct": 41.11,
-        "na_tail_recall_pct": 40.26,
-        "eu_shift_acc_pct": 41.58,
-        "eu_shift_macro_f1_pct": 37.82,
-        "eu_tail_recall_pct": 36.7,
-        "geographic_shift_f1_drop_pct": 3.29
+        "configuration": "6_Strictly_GeoInvariant_Multimodal (Zero Spatial Features)",
+        "na_in_domain_acc_pct": 79.04,
+        "na_in_domain_macro_f1_pct": 78.98,
+        "na_tail_recall_pct": 83.06,
+        "eu_shift_acc_pct": 60.92,
+        "eu_shift_macro_f1_pct": 55.66,
+        "eu_tail_recall_pct": 62.69,
+        "geographic_shift_f1_drop_pct": 23.32
+      },
+      {
+        "configuration": "7_Dual_Backbone_GeoInvariant_Ensemble (DINOv2 + ConvNeXt)",
+        "na_in_domain_acc_pct": 85.61,
+        "na_in_domain_macro_f1_pct": 85.48,
+        "na_tail_recall_pct": 87.85,
+        "eu_shift_acc_pct": 67.59,
+        "eu_shift_macro_f1_pct": 62.56,
+        "eu_tail_recall_pct": 71.54,
+        "geographic_shift_f1_drop_pct": 22.92
       }
     ],
     "temporal_shift_evaluation": {
-      "years_2020_2023_test_macro_f1_pct": 40.47,
-      "years_2024_2025_test_macro_f1_pct": 41.77
+      "early_period_test_macro_f1_pct": 74.8,
+      "late_period_test_macro_f1_pct": 78.9
     }
   },
   "subgroup_performance": [
     {
       "subgroup": "Photo Effort: Multi-Photo (>=2 views)",
-      "sample_count": 459,
-      "accuracy_pct": 50.11,
-      "macro_f1_pct": 46.38,
-      "mean_confidence_pct": 60.68,
-      "mean_predictive_entropy": 1.167
+      "sample_count": 344,
+      "accuracy_pct": 78.49,
+      "macro_f1_pct": 80.16,
+      "mean_confidence_pct": 78.44,
+      "mean_predictive_entropy": 0.75
     },
     {
       "subgroup": "Photo Effort: Single-Photo (1 view only)",
-      "sample_count": 457,
-      "accuracy_pct": 41.36,
-      "macro_f1_pct": 37.55,
-      "mean_confidence_pct": 56.41,
-      "mean_predictive_entropy": 1.336
+      "sample_count": 219,
+      "accuracy_pct": 87.67,
+      "macro_f1_pct": 84.82,
+      "mean_confidence_pct": 82.84,
+      "mean_predictive_entropy": 0.623
     },
     {
-      "subgroup": "Season: Spring Fruiting (Mar-May)",
-      "sample_count": 47,
-      "accuracy_pct": 57.45,
-      "macro_f1_pct": 12.17,
-      "mean_confidence_pct": 81.14,
-      "mean_predictive_entropy": 0.547
+      "subgroup": "Season: Spring/Summer (Mar-Aug)",
+      "sample_count": 152,
+      "accuracy_pct": 84.87,
+      "macro_f1_pct": 73.87,
+      "mean_confidence_pct": 81.63,
+      "mean_predictive_entropy": 0.64
     },
     {
-      "subgroup": "Season: Autumn Peak (Sep-Nov)",
-      "sample_count": 509,
-      "accuracy_pct": 43.81,
-      "macro_f1_pct": 41.42,
-      "mean_confidence_pct": 56.39,
-      "mean_predictive_entropy": 1.308
+      "subgroup": "Season: Autumn/Winter (Sep-Feb)",
+      "sample_count": 411,
+      "accuracy_pct": 81.02,
+      "macro_f1_pct": 78.18,
+      "mean_confidence_pct": 79.61,
+      "mean_predictive_entropy": 0.723
     },
     {
       "subgroup": "Distribution: Clean In-Distribution",
-      "sample_count": 883,
-      "accuracy_pct": 46.21,
-      "macro_f1_pct": 42.37,
-      "mean_confidence_pct": 58.56,
-      "mean_predictive_entropy": 1.254
+      "sample_count": 549,
+      "accuracy_pct": 81.97,
+      "macro_f1_pct": 82.48,
+      "mean_confidence_pct": 80.5,
+      "mean_predictive_entropy": 0.69
     },
     {
       "subgroup": "Distribution: Flagged OOD / Outliers",
-      "sample_count": 33,
-      "accuracy_pct": 33.33,
-      "macro_f1_pct": 20.25,
-      "mean_confidence_pct": 58.16,
-      "mean_predictive_entropy": 1.187
+      "sample_count": 14,
+      "accuracy_pct": 85.71,
+      "macro_f1_pct": 73.33,
+      "mean_confidence_pct": 66.66,
+      "mean_predictive_entropy": 1.135
     },
     {
       "subgroup": "Toxicity: Deadly / Highly Toxic",
-      "sample_count": 228,
-      "accuracy_pct": 36.84,
-      "macro_f1_pct": 15.34,
-      "mean_confidence_pct": 60.39,
-      "mean_predictive_entropy": 1.207
+      "sample_count": 166,
+      "accuracy_pct": 80.72,
+      "macro_f1_pct": 38.23,
+      "mean_confidence_pct": 79.57,
+      "mean_predictive_entropy": 0.719
     },
     {
       "subgroup": "Toxicity: Choice Edible",
-      "sample_count": 545,
-      "accuracy_pct": 51.74,
-      "macro_f1_pct": 27.97,
-      "mean_confidence_pct": 59.62,
-      "mean_predictive_entropy": 1.209
+      "sample_count": 271,
+      "accuracy_pct": 81.92,
+      "macro_f1_pct": 49.75,
+      "mean_confidence_pct": 80.73,
+      "mean_predictive_entropy": 0.693
     }
   ],
   "cost_sensitive_decision_making": {
     "naive_argmax_policy": {
-      "mean_decision_cost": 11.86,
-      "critical_false_safe_rate_pct": 39.47,
-      "edible_approval_yield_pct": 74.13,
+      "mean_decision_cost": 4.028,
+      "critical_false_safe_rate_pct": 11.45,
+      "edible_approval_yield_pct": 88.19,
       "abstention_referral_rate_pct": 0.0,
       "automated_coverage_pct": 100.0
     },
     "recommended_risk_aware_policy": {
-      "policy_name": "Risk_Aware_Threshold (P_deadly <= 0.015)",
-      "max_allowed_deadly_prob": 0.015,
-      "mean_decision_cost": 1.737,
-      "critical_false_safe_rate_pct": 0.44,
-      "edible_approval_yield_pct": 19.82,
-      "abstention_referral_rate_pct": 42.03,
-      "automated_coverage_pct": 57.97
+      "policy_name": "Risk_Aware_Threshold (P_deadly <= 0.050)",
+      "max_allowed_deadly_prob": 0.05,
+      "mean_decision_cost": 0.76,
+      "critical_false_safe_rate_pct": 0.6,
+      "edible_approval_yield_pct": 61.62,
+      "abstention_referral_rate_pct": 16.34,
+      "automated_coverage_pct": 83.66
     },
-    "relative_cost_reduction_pct": 85.35,
-    "critical_false_safe_reduction_pct": 98.89
+    "relative_cost_reduction_pct": 81.13,
+    "critical_false_safe_reduction_pct": 94.76
   }
 }

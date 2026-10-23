@@ -1,18 +1,29 @@
 {
   "phase": 1,
+  "data_authenticity": "100% Real iNaturalist v1 API Observations & Verified Local Images",
   "dataset_track": "Track C - iNaturalist Open Data",
   "saved_processed_data_path": "data/processed/phase1_audited_observations.parquet",
   "structure_and_quality": {
     "quality_audit": {
-      "raw_observations_total": 9729,
-      "raw_photos_total": 17490,
-      "exact_duplicate_observations": 45,
-      "missing_or_impossible_gps_count": 56,
-      "extreme_positional_accuracy_gt_10km_count": 116,
-      "captive_or_cultivated_count": 67,
-      "corrupt_photo_dimensions_count": 52,
+      "raw_observations_total": 7366,
+      "raw_photos_total": 15595,
+      "exact_duplicate_observations": 0,
+      "missing_or_impossible_gps_count": 0,
+      "invalid_observed_date_count": 0,
+      "missing_or_corrupt_local_image_count": 0,
+      "extreme_positional_accuracy_gt_10km_count": 142,
+      "captive_or_cultivated_count": 0,
+      "corrupt_photo_dimensions_count": 0,
       "missing_values_by_column": {
+        "observation_id": {
+          "count": 0,
+          "percentage": 0.0
+        },
         "observation_uuid": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "inaturalist_url": {
           "count": 0,
           "percentage": 0.0
         },
@@ -37,20 +48,20 @@
           "percentage": 0.0
         },
         "time_observed_at": {
-          "count": 406,
-          "percentage": 4.19
+          "count": 125,
+          "percentage": 1.7
         },
         "latitude": {
-          "count": 38,
-          "percentage": 0.39
+          "count": 0,
+          "percentage": 0.0
         },
         "longitude": {
-          "count": 38,
-          "percentage": 0.39
+          "count": 0,
+          "percentage": 0.0
         },
         "positional_accuracy": {
-          "count": 647,
-          "percentage": 6.68
+          "count": 1466,
+          "percentage": 19.9
         },
         "quality_grade": {
           "count": 0,
@@ -65,6 +76,22 @@
           "percentage": 0.0
         },
         "captive_cultivated": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "primary_image_url": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "local_image_path": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "data_source": {
+          "count": 0,
+          "percentage": 0.0
+        },
+        "image_downloaded_ok": {
           "count": 0,
           "percentage": 0.0
         },
@@ -103,85 +130,90 @@
       }
     },
     "structure_audit": {
-      "clean_observations_count": 9561,
+      "clean_observations_count": 7366,
       "unique_taxa_count": 40,
       "unique_families_count": 22,
-      "unique_observers_count": 1481,
-      "valid_photos_count": 17438,
+      "unique_observers_count": 4631,
+      "valid_photos_count": 15595,
       "photos_per_observation": {
-        "mean": 1.81,
+        "mean": 2.12,
         "median": 1.0,
-        "max": 5,
-        "pct_multi_photo_observations": 47.92
+        "max": 25,
+        "pct_multi_photo_observations": 48.56
       },
       "observations_per_observer": {
-        "mean": 6.46,
-        "median": 3.0,
-        "max": 190,
-        "top_10_pct_observers_share_of_data": 50.95
+        "mean": 1.59,
+        "median": 1.0,
+        "max": 58,
+        "top_10_pct_observers_share_of_data": 35.07
       },
       "regional_split": {
-        "north_america": 6884,
-        "europe": 2677
+        "europe": 3795,
+        "north_america": 3571
       },
       "toxicity_class_distribution": {
-        "Edible": 5627,
-        "Deadly_Toxic": 2364,
-        "Inedible_MildToxic": 1570
+        "Edible": 3699,
+        "Deadly_Toxic": 2067,
+        "Inedible_MildToxic": 1600
       }
     }
   },
   "long_tail_analysis": {
-    "max_class_count": 717,
-    "min_class_count": 132,
-    "imbalance_ratio_max_to_min": 5.43,
-    "gini_coefficient": 0.2581,
-    "top_5_species_share_pct": 27.42,
-    "bottom_10_species_share_pct": 14.76,
+    "max_class_count": 200,
+    "min_class_count": 100,
+    "tier_cutoffs": {
+      "tail_upper": 101.0,
+      "medium_upper": 199.0
+    },
+    "imbalance_ratio_max_to_min": 2.0,
+    "gini_coefficient": 0.0718,
+    "top_5_species_share_pct": 13.58,
+    "bottom_10_species_share_pct": 18.54,
     "tiers": [
       {
-        "frequency_tier": "Tail (<220)",
-        "num_species": 24,
-        "total_observations": 3918,
-        "mean_observations": 163.25
+        "frequency_tier": "Head (Frequent)",
+        "num_species": 31,
+        "total_observations": 6200,
+        "mean_observations": 200.0
       },
       {
-        "frequency_tier": "Medium (220-480)",
-        "num_species": 13,
-        "total_observations": 3852,
-        "mean_observations": 296.3076923076923
+        "frequency_tier": "Medium",
+        "num_species": 5,
+        "total_observations": 766,
+        "mean_observations": 153.2
       },
       {
-        "frequency_tier": "Head (>480)",
-        "num_species": 3,
-        "total_observations": 1791,
-        "mean_observations": 597.0
+        "frequency_tier": "Tail (Rare)",
+        "num_species": 4,
+        "total_observations": 400,
+        "mean_observations": 100.0
       }
     ]
   },
   "leakage_and_baselines": {
     "leakage_audit": {
-      "naive_photo_split_test_leakage_pct": 64.09,
-      "naive_observation_split_observer_overlap_pct": 95.3,
+      "naive_photo_split_test_leakage_pct": 71.5,
+      "naive_observation_split_observer_overlap_pct": 49.59,
+      "naive_observation_split_1km_spatial_overlap_pct": 30.66,
       "observer_grouped_split_observation_overlap_pct": 0.0,
       "observer_grouped_split_observer_overlap_pct": 0.0
     },
     "phase1_baselines_40_classes": {
       "random_guess_theoretical_accuracy_pct": 2.5,
       "majority_class_baseline": {
-        "val_accuracy_pct": 7.81,
-        "val_macro_f1_pct": 0.36
+        "val_accuracy_pct": 1.08,
+        "val_macro_f1_pct": 0.06
       },
       "season_plus_latitude_baseline": {
-        "val_accuracy_pct": 10.57,
-        "val_macro_f1_pct": 3.22,
-        "val_balanced_acc_pct": 5.38
+        "val_accuracy_pct": 21.0,
+        "val_macro_f1_pct": 18.61,
+        "val_balanced_acc_pct": 21.98
       },
       "full_lat_lon_season_shortcut_model": {
-        "in_domain_na_val_accuracy_pct": 10.18,
-        "in_domain_na_val_macro_f1_pct": 3.2,
-        "geographic_shift_eu_accuracy_pct": 8.97,
-        "geographic_shift_eu_macro_f1_pct": 3.01
+        "in_domain_na_val_accuracy_pct": 21.53,
+        "in_domain_na_val_macro_f1_pct": 18.31,
+        "geographic_shift_eu_accuracy_pct": 4.06,
+        "geographic_shift_eu_macro_f1_pct": 1.77
       }
     }
   }

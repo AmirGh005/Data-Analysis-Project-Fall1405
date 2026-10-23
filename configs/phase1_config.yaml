@@ -7,6 +7,7 @@ project:
 data_paths:
   raw_metadata_csv: "data/raw/fungi_observations_raw.csv"
   raw_photos_csv: "data/raw/fungi_photos_raw.csv"
+  raw_images_dir: "data/raw/images"
   species_metadata_csv: "data/species_toxicity_metadata.csv"
   audited_observations_parquet: "data/processed/phase1_audited_observations.parquet"
   figures_dir: "figures/phase1"
@@ -16,9 +17,12 @@ subset_selection:
   date_start: "2020-01-01"
   date_end: "2025-12-31"
   quality_grade: "research"
-  # Target observations per species (keeps natural long-tail distribution if species has fewer records)
-  max_observations_per_species_na: 350
-  max_observations_per_species_eu: 150
+  # Per-page and pagination settings for real iNaturalist v1 API fetching
+  per_page: 100
+  max_pages_per_species_na: 1
+  max_pages_per_species_eu: 1
+  image_size_variant: "small"  # "small" (240px) or "medium" (500px) from iNaturalist S3 CDN
+  max_download_workers: 12
   regions:
     north_america:
       min_lat: 24.0
@@ -31,7 +35,7 @@ subset_selection:
       min_lon: -10.0
       max_lon: 35.0
 
-# 40 Carefully Selected Mushroom Species (20 Edible, 20 Toxic/Deadly/Inedible Look-alikes)
+# 40 Target Mushroom Species (20 Edible, 20 Toxic/Deadly/Inedible Look-alikes)
 target_species:
   # --- GROUP 1: DEADLY & HIGHLY TOXIC (12 Species) ---
   - scientific_name: "Amanita phalloides"

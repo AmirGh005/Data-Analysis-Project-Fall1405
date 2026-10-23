@@ -1,24 +1,35 @@
 {
   "phase": 2,
   "split_counts": {
-    "train": 5031,
-    "shift_eu_test": 2677,
-    "val": 937,
-    "test": 916
+    "shift_eu_test": 3795,
+    "train": 2485,
+    "test": 563,
+    "val": 523
   },
   "preprocessing_and_imputation": {
-    "train_median_positional_accuracy_m": 13.8,
-    "train_median_observed_hour": 13.47,
-    "pos_accuracy_missing_rate_pct": 6.66,
-    "hour_missing_rate_pct": 4.23,
+    "train_median_positional_accuracy_m": 12.0,
+    "train_median_observed_hour": 18.99,
+    "pos_accuracy_missing_rate_pct": 19.9,
+    "hour_missing_rate_pct": 1.7,
     "engineered_features_count": 15
   },
   "vision_embedding_metadata": {
-    "backbone_name": "facebook/dinov2-small-patch14-224",
-    "input_resolution": [
-      224,
-      224
-    ],
+    "primary_backbone": {
+      "backbone_name": "vit_small_patch16_224.dino",
+      "device_used": "cpu",
+      "raw_embedding_dim": 384,
+      "l2_normalized": true,
+      "transform_repr": "Compose(\n    Resize(size=248, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeToTensor()\n    Normalize(mean=tensor([0.4850, 0.4560, 0.4060]), std=tensor([0.2290, 0.2240, 0.2250]))\n)",
+      "inference_authenticity": "100% Real PyTorch Forward Pass on Local JPG Files (Zero Label Usage)"
+    },
+    "secondary_backbone": {
+      "backbone_name": "convnext_tiny.fb_in22k",
+      "device_used": "cpu",
+      "raw_embedding_dim": 768,
+      "l2_normalized": true,
+      "transform_repr": "Compose(\n    Resize(size=256, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeToTensor()\n    Normalize(mean=tensor([0.4850, 0.4560, 0.4060]), std=tensor([0.2290, 0.2240, 0.2250]))\n)",
+      "inference_authenticity": "100% Real PyTorch Forward Pass on Local JPG Files (Zero Label Usage)"
+    },
     "normalization_mean": [
       0.485,
       0.456,
@@ -28,110 +39,105 @@
       0.229,
       0.224,
       0.225
-    ],
-    "embedding_dim": 64,
-    "l2_normalized": true,
-    "pooling_strategy": "Multi-photo observation mean pooling + L2 normalization"
+    ]
   },
   "unsupervised_discovery": {
-    "pca_variance_explained_top5_pct": 12.8,
-    "pca_variance_explained_top20_pct": 38.93,
+    "pca_components_count": 32,
+    "pca_variance_explained_top5_pct": 27.08,
+    "pca_variance_explained_total_pct": 62.74,
     "manifold_projection_method": "UMAP",
     "k_sweep_evaluation": [
       {
         "k": 4,
-        "silhouette_score": 0.0508,
-        "davies_bouldin_index": 3.4325,
-        "calinski_harabasz_score": 222.65
+        "silhouette_score": 0.1129,
+        "davies_bouldin_index": 2.5211,
+        "calinski_harabasz_score": 219.89
       },
       {
         "k": 6,
-        "silhouette_score": 0.0555,
-        "davies_bouldin_index": 3.1067,
-        "calinski_harabasz_score": 195.17
+        "silhouette_score": 0.1037,
+        "davies_bouldin_index": 2.486,
+        "calinski_harabasz_score": 183.65
       },
       {
         "k": 8,
-        "silhouette_score": 0.0559,
-        "davies_bouldin_index": 3.0747,
-        "calinski_harabasz_score": 168.91
+        "silhouette_score": 0.1209,
+        "davies_bouldin_index": 2.1506,
+        "calinski_harabasz_score": 171.13
       },
       {
         "k": 10,
-        "silhouette_score": 0.0561,
-        "davies_bouldin_index": 2.909,
-        "calinski_harabasz_score": 148.8
+        "silhouette_score": 0.1182,
+        "davies_bouldin_index": 2.2138,
+        "calinski_harabasz_score": 157.25
       },
       {
         "k": 12,
-        "silhouette_score": 0.0529,
-        "davies_bouldin_index": 3.0367,
-        "calinski_harabasz_score": 132.4
+        "silhouette_score": 0.1103,
+        "davies_bouldin_index": 2.2187,
+        "calinski_harabasz_score": 144.85
       },
       {
         "k": 14,
-        "silhouette_score": 0.05,
-        "davies_bouldin_index": 3.1508,
-        "calinski_harabasz_score": 118.61
+        "silhouette_score": 0.1172,
+        "davies_bouldin_index": 2.1254,
+        "calinski_harabasz_score": 136.61
       },
       {
         "k": 16,
-        "silhouette_score": 0.0483,
-        "davies_bouldin_index": 3.1712,
-        "calinski_harabasz_score": 108.23
+        "silhouette_score": 0.1159,
+        "davies_bouldin_index": 2.1603,
+        "calinski_harabasz_score": 128.45
       }
     ],
-    "selected_optimal_k": 10,
-    "kmeans_best_silhouette": 0.0561,
-    "agglomerative_ward_silhouette": 0.0033,
-    "kmeans_vs_agglomerative_ari": 0.203,
+    "selected_optimal_k": 8,
+    "kmeans_best_silhouette": 0.1209,
+    "agglomerative_ward_silhouette": 0.0825,
+    "kmeans_vs_agglomerative_ari": 0.4495,
     "stability_across_seeds_and_subsamples": {
-      "mean_ari": 0.8756,
-      "std_ari": 0.0141,
-      "mean_nmi": 0.8545
+      "mean_ari": 0.8121,
+      "std_ari": 0.0557,
+      "mean_nmi": 0.8312
     },
     "alignment_with_taxonomy_and_guilds": {
-      "nmi_clusters_vs_lookalike_guild": 0.429,
-      "nmi_clusters_vs_taxonomic_family": 0.3564
+      "nmi_clusters_vs_lookalike_guild": 0.3104,
+      "nmi_clusters_vs_taxonomic_family": 0.3236
     },
     "long_tail_embedding_purity": [
       {
         "long_tail_tier": "Head (Frequent)",
-        "mean_knn_species_purity": 28.74,
-        "mean_deadly_neighbor_mixing_pct": 22.93,
-        "sample_count": 1201
+        "mean_knn_species_purity": 52.82,
+        "mean_deadly_neighbor_mixing_pct": 28.15,
+        "sample_count": 903
       },
       {
         "long_tail_tier": "Medium",
-        "mean_knn_species_purity": 16.12,
-        "mean_deadly_neighbor_mixing_pct": 24.55,
-        "sample_count": 1986
+        "mean_knn_species_purity": 51.66,
+        "mean_deadly_neighbor_mixing_pct": 37.78,
+        "sample_count": 836
       },
       {
         "long_tail_tier": "Tail (Rare)",
-        "mean_knn_species_purity": 10.56,
-        "mean_deadly_neighbor_mixing_pct": 22.86,
-        "sample_count": 1844
+        "mean_knn_species_purity": 47.13,
+        "mean_deadly_neighbor_mixing_pct": 33.22,
+        "sample_count": 746
       }
     ]
   },
   "ood_analysis": {
-    "total_flagged_ood_samples": 295,
-    "flagged_ood_percentage": 3.09,
-    "mean_centroid_cosine_dist_normal": 0.6945,
-    "mean_centroid_cosine_dist_ood": 0.6712,
+    "total_flagged_ood_samples": 221,
+    "flagged_ood_percentage": 3.0,
+    "mean_centroid_cosine_dist_normal": 0.2908,
+    "mean_centroid_cosine_dist_ood": 0.3882,
     "ood_rate_by_long_tail_tier_pct": {
-      "Head (Frequent)": 3.95,
-      "Medium": 3.58,
-      "Tail (Rare)": 2.02
+      "Head (Frequent)": 3.0,
+      "Medium": 2.92,
+      "Tail (Rare)": 3.07
     },
     "qualitative_diagnosis_breakdown": {
-      "Biological_Atypical_Morphology_or_Lookalike_Boundary": 118,
-      "Spatial_Metadata_Outlier_Extreme_GPS_Error": 114,
-      "Low_Quality_Single_Photo_or_Occluded": 22,
-      "Low_Quality_Blur_Dark": 19,
-      "Biological_Atypical_Decayed_SporePrint": 14,
-      "Potential_Label_Error_LookalikeSwap": 8
+      "Low_Quality_Blur_or_Extreme_Illumination": 172,
+      "Biological_Atypical_Morphology_or_Background_Clutter": 47,
+      "Spatial_Metadata_Outlier_Extreme_GPS_Error": 2
     }
   }
 }
