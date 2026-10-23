@@ -1,0 +1,30 @@
+project:
+  name: "iNaturalist-Fungi-Risk-Aware-Classification"
+  track: "Track C - iNaturalist Open Data"
+  random_seed: 42
+  phase: 5
+
+paths:
+  input_dataset_parquet: "data/processed/phase2_prepared_dataset.parquet"
+  input_dataset_csv: "data/processed/phase2_prepared_dataset.csv"
+  input_embeddings_npz: "data/processed/phase2_visual_embeddings.npz"
+  raw_photos_csv: "data/raw/fungi_photos_raw.csv"
+  species_metadata_csv: "data/species_toxicity_metadata.csv"
+  phase1_summary_json: "reports/phase1/phase1_audit_summary.json"
+  phase2_summary_json: "reports/phase2/phase2_summary.json"
+  phase3_summary_json: "reports/phase3/phase3_summary.json"
+  phase4_summary_json: "reports/phase4/phase4_summary.json"
+  phase3_model_bundle: "models/phase3_best_multimodal_bundle.joblib"
+  related_work_csv: "reports/final/phase5_related_work_comparison.csv"
+  robustness_stress_csv: "reports/final/phase5_robustness_stress_tests.csv"
+  paired_significance_csv: "reports/final/phase5_uncertainty_paired_tests.csv"
+  governance_audit_csv: "reports/final/phase5_ethics_and_governance_audit.csv"
+  summary_json: "reports/final/phase5_final_summary.json"
+  figures_dir: "figures/final"
+
+robustness_tests:
+  visual_noise_sigmas: [0.0, 0.05, 0.10, 0.15, 0.25, 0.35]
+  metadata_dropout_rates: [0.0, 0.25, 0.50, 0.75, 1.0]
+  gps_jitter_degrees: [0.0, 0.5, 2.0, 5.0, 12.0]
+  label_noise_rates: [0.0, 0.05, 0.10, 0.15, 0.20]
+  paired_bootstrap_samples: 500

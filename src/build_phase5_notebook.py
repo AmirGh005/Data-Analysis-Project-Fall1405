@@ -1,0 +1,135 @@
+"""
+Generates the reproducible Final Jupyter Notebook for Phase 5
+(notebooks/05_phase5_robustness_and_final_synthesis.ipynb).
+"""
+
+import os
+import json
+
+NOTEBOOK_PATH = "notebooks/05_phase5_robustness_and_final_synthesis.ipynb"
+
+
+def create_phase5_notebook() -> None:
+    os.makedirs(os.path.dirname(NOTEBOOK_PATH), exist_ok=True)
+
+    cells = [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# فاز پنجم (نسخه نهایی): مرور کارهای مرتبط، تست‌های استحکام، مقایسه آماری و حاکمیت داده\n",
+                "**پروژه درس تحلیل داده — پاییز ۱۴۰۵ (مسیر ج: iNaturalist Fungi)**\n",
+                "\n",
+                "این نوت‌بوک جمع‌بندی نهایی کل پروژه (فاز ۱ تا ۵) شامل جدول کارهای مرتبط، ۴ آزمایش استرس استحکام (Robustness Stress Tests)، آزمون‌های معناداری زوجی بوت‌استرپ و ممیزی اخلاق و مجوز داده را ارائه می‌دهد."
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "import json\n",
+                "import pandas as pd\n",
+                "from IPython.display import Image, display\n",
+                "\n",
+                "os.chdir('..') if os.path.basename(os.getcwd()) == 'notebooks' else None\n",
+                "df_rw = pd.read_csv('reports/final/phase5_related_work_comparison.csv')\n",
+                "print('=== ۱. جدول مرور کارهای مرتبط (Related Work) ===')\n",
+                "display(df_rw)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۲. مقایسه آگاه از عدم قطعیت (Paired Bootstrap Significance Tests)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_sig = pd.read_csv('reports/final/phase5_uncertainty_paired_tests.csv')\n",
+                "display(df_sig)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۳. نتایج آزمایش‌های استرس استحکام (Real Robustness Stress Tests)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_stress = pd.read_csv('reports/final/phase5_robustness_stress_tests.csv')\n",
+                "display(df_stress)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۴. ممیزی اخلاق، حریم خصوصی و حاکمیت داده (Ethics, Privacy & Governance)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_gov = pd.read_csv('reports/final/phase5_ethics_and_governance_audit.csv')\n",
+                "display(df_gov)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۵. نمودارهای جمع‌بندی نهایی فاز پنجم"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "figs = [\n",
+                "    'figures/final/fig1_robustness_stress_test_curves.png',\n",
+                "    'figures/final/fig2_paired_bootstrap_significance_forest.png',\n",
+                "    'figures/final/fig3_governance_licensing_and_safety_milestones.png',\n",
+                "]\n",
+                "for fp in figs:\n",
+                "    if os.path.exists(fp):\n",
+                "        print(f'\\n--- {os.path.basename(fp)} ---')\n",
+                "        display(Image(filename=fp))"
+            ],
+        },
+    ]
+
+    nb = {
+        "cells": cells,
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.12.0"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    with open(NOTEBOOK_PATH, "w", encoding="utf-8") as f:
+        json.dump(nb, f, indent=2, ensure_ascii=False)
+    print(f"Successfully generated Phase 5 Final Notebook: {NOTEBOOK_PATH}")
+
+
+if __name__ == "__main__":
+    create_phase5_notebook()
