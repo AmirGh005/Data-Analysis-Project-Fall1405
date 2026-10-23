@@ -1,0 +1,167 @@
+{
+  "M1_Metadata_LogReg": {
+    "best_params": {
+      "C": 5.0
+    },
+    "trials": [
+      {
+        "C": 0.05,
+        "val_macro_f1_pct": 3.31
+      },
+      {
+        "C": 0.2,
+        "val_macro_f1_pct": 3.43
+      },
+      {
+        "C": 1.0,
+        "val_macro_f1_pct": 3.53
+      },
+      {
+        "C": 5.0,
+        "val_macro_f1_pct": 3.53
+      }
+    ]
+  },
+  "M2_Metadata_GBDT": {
+    "best_params": {
+      "learning_rate": 0.08,
+      "max_leaf_nodes": 15
+    },
+    "trials": [
+      {
+        "learning_rate": 0.03,
+        "max_leaf_nodes": 15,
+        "val_macro_f1_pct": 3.12
+      },
+      {
+        "learning_rate": 0.03,
+        "max_leaf_nodes": 31,
+        "val_macro_f1_pct": 3.03
+      },
+      {
+        "learning_rate": 0.08,
+        "max_leaf_nodes": 15,
+        "val_macro_f1_pct": 3.7
+      },
+      {
+        "learning_rate": 0.08,
+        "max_leaf_nodes": 31,
+        "val_macro_f1_pct": 3.51
+      }
+    ]
+  },
+  "M3_Image_LinearProbe": {
+    "best_params": {
+      "C": 0.1
+    },
+    "trials": [
+      {
+        "C": 0.1,
+        "val_macro_f1_pct": 39.58
+      },
+      {
+        "C": 0.5,
+        "val_macro_f1_pct": 39.21
+      },
+      {
+        "C": 1.0,
+        "val_macro_f1_pct": 39.19
+      },
+      {
+        "C": 2.5,
+        "val_macro_f1_pct": 39.34
+      },
+      {
+        "C": 5.0,
+        "val_macro_f1_pct": 39.44
+      },
+      {
+        "C": 10.0,
+        "val_macro_f1_pct": 39.42
+      }
+    ]
+  },
+  "M4_Multimodal_Fusion_MLP": {
+    "best_params": {
+      "hidden_layers": [
+        192,
+        96
+      ],
+      "alpha": 0.001
+    },
+    "trials": [
+      {
+        "hidden_layers": [
+          128,
+          64
+        ],
+        "alpha": 0.001,
+        "val_macro_f1_pct": 35.04
+      },
+      {
+        "hidden_layers": [
+          128,
+          64
+        ],
+        "alpha": 0.01,
+        "val_macro_f1_pct": 31.04
+      },
+      {
+        "hidden_layers": [
+          128,
+          64
+        ],
+        "alpha": 0.05,
+        "val_macro_f1_pct": 34.61
+      },
+      {
+        "hidden_layers": [
+          192,
+          96
+        ],
+        "alpha": 0.001,
+        "val_macro_f1_pct": 39.46
+      },
+      {
+        "hidden_layers": [
+          192,
+          96
+        ],
+        "alpha": 0.01,
+        "val_macro_f1_pct": 39.26
+      },
+      {
+        "hidden_layers": [
+          192,
+          96
+        ],
+        "alpha": 0.05,
+        "val_macro_f1_pct": 39.03
+      }
+    ]
+  },
+  "M5_LongTail_Calibrated_Multimodal": {
+    "best_params": {
+      "logit_adjustment_tau": 0.0,
+      "temperature_T": 1.3407
+    },
+    "tau_trials": [
+      {
+        "tau": 0.0,
+        "val_macro_f1_pct": 41.33
+      },
+      {
+        "tau": 0.35,
+        "val_macro_f1_pct": 40.76
+      },
+      {
+        "tau": 0.65,
+        "val_macro_f1_pct": 40.2
+      },
+      {
+        "tau": 1.0,
+        "val_macro_f1_pct": 39.1
+      }
+    ]
+  }
+}

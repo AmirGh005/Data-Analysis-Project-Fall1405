@@ -1,0 +1,56 @@
+project:
+  name: "iNaturalist-Fungi-Risk-Aware-Classification"
+  track: "Track C - iNaturalist Open Data"
+  random_seed: 42
+  phase: 3
+
+paths:
+  input_dataset_parquet: "data/processed/phase2_prepared_dataset.parquet"
+  input_dataset_csv: "data/processed/phase2_prepared_dataset.csv"
+  input_embeddings_npz: "data/processed/phase2_visual_embeddings.npz"
+  species_metadata_csv: "data/species_toxicity_metadata.csv"
+  benchmark_table_csv: "reports/phase3/phase3_model_benchmark.csv"
+  per_class_metrics_csv: "reports/phase3/phase3_per_class_longtail_metrics.csv"
+  error_analysis_csv: "reports/phase3/phase3_systematic_error_cases.csv"
+  hyperparams_log_json: "reports/phase3/phase3_hyperparameter_search_log.json"
+  summary_json: "reports/phase3/phase3_summary.json"
+  best_model_artifact: "models/phase3_best_multimodal_bundle.joblib"
+  figures_dir: "figures/phase3"
+
+experimental_design:
+  target_column: "taxon_id"
+  group_column: "observer_id"
+  cv_folds: 5
+  bootstrap_iterations: 200
+  primary_selection_metric: "macro_f1"
+  metadata_features:
+    - "doy_sin"
+    - "doy_cos"
+    - "hour_sin"
+    - "hour_cos"
+    - "geo_x"
+    - "geo_y"
+    - "geo_z"
+    - "lat_deviation_from_45N"
+    - "bioclimatic_lat_doy_interaction"
+    - "log10_positional_accuracy"
+    - "pos_accuracy_missing_flag"
+    - "hour_missing_flag"
+    - "log_num_photos"
+    - "mean_aspect_ratio"
+    - "max_megapixels"
+
+hyperparameter_search_space:
+  metadata_logreg:
+    C: [0.05, 0.2, 1.0, 5.0]
+  metadata_gbdt:
+    learning_rate: [0.03, 0.08]
+    max_leaf_nodes: [15, 31]
+    min_samples_leaf: [20, 40]
+  image_linear_probe:
+    C: [0.1, 0.5, 1.0, 2.5, 5.0, 10.0]
+  multimodal_mlp:
+    alpha: [0.001, 0.01, 0.05]
+    hidden_layer_sizes: [[128, 64], [192, 96]]
+  long_tail_logit_adjustment:
+    tau: [0.0, 0.35, 0.65, 1.0]

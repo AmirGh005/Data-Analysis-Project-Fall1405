@@ -1,0 +1,122 @@
+"""
+Generates the reproducible Jupyter Notebook for Phase 3 Predictive Modeling & Evaluation
+(notebooks/03_phase3_modeling_and_evaluation.ipynb).
+"""
+
+import os
+import json
+
+NOTEBOOK_PATH = "notebooks/03_phase3_modeling_and_evaluation.ipynb"
+
+
+def create_phase3_notebook() -> None:
+    os.makedirs(os.path.dirname(NOTEBOOK_PATH), exist_ok=True)
+
+    cells = [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# فاز سوم: مدل‌سازی پیش‌بینانه، طراحی آزمایش بدون نشت و کالیبراسیون دنباله بلند\n",
+                "**پروژه درس تحلیل داده — پاییز ۱۴۰۵ (مسیر ج: iNaturalist Fungi)**\n",
+                "\n",
+                "این نوت‌بوک نتایج کامل اعتبارسنجی متقاطع گروهی (`5-Fold Observer-Grouped CV`)، مقایسه ۶ خانواده مدل (از خط مبنای فراداده و تصویر تا مدل ترکیبی چندوجهی)، تحلیل دنباله بلند (`Head` / `Medium` / `Tail`)، کالیبراسیون اطمینان و تحلیل خطاهای سیستماتیک را نمایش می‌دهد."
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "import json\n",
+                "import pandas as pd\n",
+                "from IPython.display import Image, display\n",
+                "\n",
+                "os.chdir('..') if os.path.basename(os.getcwd()) == 'notebooks' else None\n",
+                "df_bench = pd.read_csv('reports/phase3/phase3_model_benchmark.csv')\n",
+                "display(df_bench)"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۱. عملکرد به تفکیک ۴۰ گونه و زیرگروه‌های دنباله بلند (Per-Class & Long-Tail Metrics)"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_per_class = pd.read_csv('reports/phase3/phase3_per_class_longtail_metrics.csv')\n",
+                "print('Top 10 Most Improved Species via Multimodal Fusion + Logit Adjustment:')\n",
+                "display(df_per_class.sort_values('multimodal_f1_gain_pct', ascending=False).head(10))"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۲. تحلیل خطاهای سیستماتیک و پرریسک روی مجموعه آزمون قفل‌شده"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "df_errors = pd.read_csv('reports/phase3/phase3_systematic_error_cases.csv')\n",
+                "print('Failure Mode Breakdown:')\n",
+                "display(df_errors['failure_mode_category'].value_counts())\n",
+                "display(df_errors.head(12))"
+            ],
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## ۳. نمودارهای بنچمارک مدل‌ها، دنباله بلند، کالیبراسیون و تحلیل خطا"
+            ],
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "figs = [\n",
+                "    'figures/phase3/fig1_model_family_benchmark_and_cv.png',\n",
+                "    'figures/phase3/fig2_long_tail_tier_recall_comparison.png',\n",
+                "    'figures/phase3/fig3_calibration_and_rare_class_overconfidence.png',\n",
+                "    'figures/phase3/fig4_per_class_f1_and_critical_safety_errors.png',\n",
+                "    'figures/phase3/fig5_systematic_error_taxonomy.png',\n",
+                "]\n",
+                "for fp in figs:\n",
+                "    if os.path.exists(fp):\n",
+                "        print(f'\\n--- {os.path.basename(fp)} ---')\n",
+                "        display(Image(filename=fp))"
+            ],
+        },
+    ]
+
+    nb = {
+        "cells": cells,
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.12.0"},
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    with open(NOTEBOOK_PATH, "w", encoding="utf-8") as f:
+        json.dump(nb, f, indent=2, ensure_ascii=False)
+    print(f"Successfully generated Phase 3 Notebook: {NOTEBOOK_PATH}")
+
+
+if __name__ == "__main__":
+    create_phase3_notebook()

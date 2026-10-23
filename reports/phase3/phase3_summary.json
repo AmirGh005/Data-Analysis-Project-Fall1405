@@ -1,0 +1,326 @@
+{
+  "phase": 3,
+  "experimental_design": {
+    "split_unit": "observer_id (GroupShuffleSplit & 5-Fold GroupKFold)",
+    "train_size": 5031,
+    "val_size": 937,
+    "locked_test_size": 916,
+    "zero_observer_leakage_verified": true
+  },
+  "cv_5fold_summary": {
+    "M0_Majority_Dummy": {
+      "cv_mean_macro_f1_pct": 0.4,
+      "cv_std_macro_f1_pct": 0.03,
+      "fold_scores": [
+        0.41,
+        0.38,
+        0.35,
+        0.43,
+        0.43
+      ]
+    },
+    "M1_Metadata_LogReg": {
+      "cv_mean_macro_f1_pct": 3.8,
+      "cv_std_macro_f1_pct": 0.31,
+      "fold_scores": [
+        4.0,
+        3.56,
+        3.41,
+        4.28,
+        3.74
+      ]
+    },
+    "M2_Metadata_GBDT": {
+      "cv_mean_macro_f1_pct": 4.74,
+      "cv_std_macro_f1_pct": 0.68,
+      "fold_scores": [
+        5.66,
+        3.68,
+        4.71,
+        5.24,
+        4.4
+      ]
+    },
+    "M3_Image_LinearProbe": {
+      "cv_mean_macro_f1_pct": 38.41,
+      "cv_std_macro_f1_pct": 1.42,
+      "fold_scores": [
+        38.51,
+        38.89,
+        40.3,
+        35.9,
+        38.43
+      ]
+    },
+    "M4_Multimodal_Fusion_MLP": {
+      "cv_mean_macro_f1_pct": 33.25,
+      "cv_std_macro_f1_pct": 2.51,
+      "fold_scores": [
+        29.55,
+        32.66,
+        37.27,
+        34.19,
+        32.58
+      ]
+    },
+    "M5_LongTail_Calibrated_Multimodal": {
+      "cv_mean_macro_f1_pct": 39.17,
+      "cv_std_macro_f1_pct": 2.11,
+      "fold_scores": [
+        39.44,
+        38.86,
+        42.86,
+        36.39,
+        38.31
+      ]
+    }
+  },
+  "benchmark_results": [
+    {
+      "model_id": "M0_Majority_Dummy",
+      "cv_5fold_macro_f1_mean": 0.4,
+      "cv_5fold_macro_f1_std": 0.03,
+      "val_accuracy_pct": 7.58,
+      "val_macro_f1_pct": 0.35,
+      "test_accuracy_pct": 8.73,
+      "test_acc_ci_low": 7.1,
+      "test_acc_ci_high": 10.48,
+      "test_top3_accuracy_pct": 12.55,
+      "test_balanced_accuracy_pct": 2.5,
+      "test_macro_f1_pct": 0.4,
+      "test_macro_f1_ci_low": 0.33,
+      "test_macro_f1_ci_high": 0.47,
+      "test_macro_precision_pct": 0.22,
+      "test_macro_recall_pct": 2.5,
+      "test_roc_auc_ovr_pct": 50.0,
+      "test_pr_auc_macro_pct": 2.5,
+      "test_head_tier_recall_pct": 25.0,
+      "test_medium_tier_recall_pct": 0.0,
+      "test_tail_rare_tier_recall_pct": 0.0,
+      "test_ece_pct": 91.27,
+      "test_brier_score": 1.8253,
+      "test_critical_false_safe_rate_pct": 100.0,
+      "test_tail_error_mean_confidence_pct": 100.0
+    },
+    {
+      "model_id": "M1_Metadata_LogReg",
+      "cv_5fold_macro_f1_mean": 3.8,
+      "cv_5fold_macro_f1_std": 0.31,
+      "val_accuracy_pct": 11.95,
+      "val_macro_f1_pct": 3.53,
+      "test_accuracy_pct": 11.9,
+      "test_acc_ci_low": 9.83,
+      "test_acc_ci_high": 13.86,
+      "test_top3_accuracy_pct": 27.18,
+      "test_balanced_accuracy_pct": 5.84,
+      "test_macro_f1_pct": 3.71,
+      "test_macro_f1_ci_low": 3.03,
+      "test_macro_f1_ci_high": 4.36,
+      "test_macro_precision_pct": 3.32,
+      "test_macro_recall_pct": 5.84,
+      "test_roc_auc_ovr_pct": 59.71,
+      "test_pr_auc_macro_pct": 6.45,
+      "test_head_tier_recall_pct": 26.23,
+      "test_medium_tier_recall_pct": 9.2,
+      "test_tail_rare_tier_recall_pct": 0.0,
+      "test_ece_pct": 2.59,
+      "test_brier_score": 0.9438,
+      "test_critical_false_safe_rate_pct": 90.79,
+      "test_tail_error_mean_confidence_pct": 11.55
+    },
+    {
+      "model_id": "M2_Metadata_GBDT",
+      "cv_5fold_macro_f1_mean": 4.74,
+      "cv_5fold_macro_f1_std": 0.68,
+      "val_accuracy_pct": 7.9,
+      "val_macro_f1_pct": 3.7,
+      "test_accuracy_pct": 8.73,
+      "test_acc_ci_low": 7.09,
+      "test_acc_ci_high": 10.59,
+      "test_top3_accuracy_pct": 23.47,
+      "test_balanced_accuracy_pct": 5.48,
+      "test_macro_f1_pct": 4.9,
+      "test_macro_f1_ci_low": 3.76,
+      "test_macro_f1_ci_high": 5.8,
+      "test_macro_precision_pct": 5.13,
+      "test_macro_recall_pct": 5.48,
+      "test_roc_auc_ovr_pct": 58.54,
+      "test_pr_auc_macro_pct": 5.88,
+      "test_head_tier_recall_pct": 14.55,
+      "test_medium_tier_recall_pct": 10.15,
+      "test_tail_rare_tier_recall_pct": 0.85,
+      "test_ece_pct": 16.24,
+      "test_brier_score": 0.9953,
+      "test_critical_false_safe_rate_pct": 76.32,
+      "test_tail_error_mean_confidence_pct": 23.06
+    },
+    {
+      "model_id": "M3_Image_LinearProbe",
+      "cv_5fold_macro_f1_mean": 38.41,
+      "cv_5fold_macro_f1_std": 1.42,
+      "val_accuracy_pct": 44.61,
+      "val_macro_f1_pct": 39.58,
+      "test_accuracy_pct": 46.18,
+      "test_acc_ci_low": 43.12,
+      "test_acc_ci_high": 49.35,
+      "test_top3_accuracy_pct": 75.66,
+      "test_balanced_accuracy_pct": 40.33,
+      "test_macro_f1_pct": 39.31,
+      "test_macro_f1_ci_low": 35.22,
+      "test_macro_f1_ci_high": 41.74,
+      "test_macro_precision_pct": 40.66,
+      "test_macro_recall_pct": 40.33,
+      "test_roc_auc_ovr_pct": 94.89,
+      "test_pr_auc_macro_pct": 45.84,
+      "test_head_tier_recall_pct": 65.24,
+      "test_medium_tier_recall_pct": 44.32,
+      "test_tail_rare_tier_recall_pct": 33.27,
+      "test_ece_pct": 3.6,
+      "test_brier_score": 0.6786,
+      "test_critical_false_safe_rate_pct": 42.11,
+      "test_tail_error_mean_confidence_pct": 39.84
+    },
+    {
+      "model_id": "M4_Multimodal_Fusion_MLP",
+      "cv_5fold_macro_f1_mean": 33.25,
+      "cv_5fold_macro_f1_std": 2.51,
+      "val_accuracy_pct": 45.04,
+      "val_macro_f1_pct": 39.46,
+      "test_accuracy_pct": 43.56,
+      "test_acc_ci_low": 40.28,
+      "test_acc_ci_high": 46.18,
+      "test_top3_accuracy_pct": 74.02,
+      "test_balanced_accuracy_pct": 39.07,
+      "test_macro_f1_pct": 38.2,
+      "test_macro_f1_ci_low": 34.32,
+      "test_macro_f1_ci_high": 40.77,
+      "test_macro_precision_pct": 40.21,
+      "test_macro_recall_pct": 39.07,
+      "test_roc_auc_ovr_pct": 94.18,
+      "test_pr_auc_macro_pct": 41.19,
+      "test_head_tier_recall_pct": 60.64,
+      "test_medium_tier_recall_pct": 41.36,
+      "test_tail_rare_tier_recall_pct": 33.7,
+      "test_ece_pct": 29.11,
+      "test_brier_score": 0.8105,
+      "test_critical_false_safe_rate_pct": 41.23,
+      "test_tail_error_mean_confidence_pct": 65.71
+    },
+    {
+      "model_id": "M5_LongTail_Calibrated_Multimodal",
+      "cv_5fold_macro_f1_mean": 39.17,
+      "cv_5fold_macro_f1_std": 2.11,
+      "val_accuracy_pct": 46.53,
+      "val_macro_f1_pct": 42.04,
+      "test_accuracy_pct": 45.74,
+      "test_acc_ci_low": 42.58,
+      "test_acc_ci_high": 49.13,
+      "test_top3_accuracy_pct": 75.98,
+      "test_balanced_accuracy_pct": 42.93,
+      "test_macro_f1_pct": 42.0,
+      "test_macro_f1_ci_low": 38.3,
+      "test_macro_f1_ci_high": 44.59,
+      "test_macro_precision_pct": 42.83,
+      "test_macro_recall_pct": 42.93,
+      "test_roc_auc_ovr_pct": 94.95,
+      "test_pr_auc_macro_pct": 44.57,
+      "test_head_tier_recall_pct": 58.75,
+      "test_medium_tier_recall_pct": 42.22,
+      "test_tail_rare_tier_recall_pct": 40.51,
+      "test_ece_pct": 12.81,
+      "test_brier_score": 0.707,
+      "test_critical_false_safe_rate_pct": 39.47,
+      "test_tail_error_mean_confidence_pct": 50.22
+    }
+  ],
+  "calibration_analysis": {
+    "ece_uncalibrated_m4_pct": 29.11,
+    "ece_calibrated_m5_pct": 12.81,
+    "optimal_temperature": 1.3407
+  },
+  "error_analysis_summary": {
+    "total_test_errors": 497,
+    "total_test_samples": 916,
+    "pct_errors_within_same_lookalike_guild": 49.7,
+    "failure_mode_breakdown": {
+      "Morphological_Lookalike_Guild_Confusion": 185,
+      "Rare_Tail_Species_Underrepresentation": 99,
+      "Single_View_Ambiguity_Missing_Gill_Stem_Angle": 81,
+      "Critical_Lookalike_Deadly_Predicted_as_Edible": 62,
+      "Background_Season_or_Habitat_Overlap": 56,
+      "Out_of_Distribution_or_Corrupted_Visual_Sample": 14
+    },
+    "top_10_confused_species_pairs": [
+      {
+        "true_species": "Agaricus xanthodermus",
+        "predicted_species": "Agaricus campestris",
+        "true_toxicity": "Deadly_Toxic",
+        "predicted_toxicity": "Edible",
+        "error_count": 17
+      },
+      {
+        "true_species": "Tylopilus felleus",
+        "predicted_species": "Boletus edulis",
+        "true_toxicity": "Inedible_MildToxic",
+        "predicted_toxicity": "Edible",
+        "error_count": 15
+      },
+      {
+        "true_species": "Gyromitra esculenta",
+        "predicted_species": "Morchella esculenta",
+        "true_toxicity": "Deadly_Toxic",
+        "predicted_toxicity": "Edible",
+        "error_count": 10
+      },
+      {
+        "true_species": "Flammulina velutipes",
+        "predicted_species": "Armillaria mellea",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Edible",
+        "error_count": 10
+      },
+      {
+        "true_species": "Amanita pantherina",
+        "predicted_species": "Amanita rubescens",
+        "true_toxicity": "Deadly_Toxic",
+        "predicted_toxicity": "Edible",
+        "error_count": 9
+      },
+      {
+        "true_species": "Amanita rubescens",
+        "predicted_species": "Amanita pantherina",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Deadly_Toxic",
+        "error_count": 8
+      },
+      {
+        "true_species": "Macrolepiota procera",
+        "predicted_species": "Chlorophyllum molybdites",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Deadly_Toxic",
+        "error_count": 8
+      },
+      {
+        "true_species": "Imleria badia",
+        "predicted_species": "Boletus edulis",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Edible",
+        "error_count": 6
+      },
+      {
+        "true_species": "Lactarius deliciosus",
+        "predicted_species": "Hydnum repandum",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Edible",
+        "error_count": 6
+      },
+      {
+        "true_species": "Imleria badia",
+        "predicted_species": "Tylopilus felleus",
+        "true_toxicity": "Edible",
+        "predicted_toxicity": "Inedible_MildToxic",
+        "error_count": 6
+      }
+    ]
+  }
+}
